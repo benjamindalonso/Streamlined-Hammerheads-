@@ -2,8 +2,8 @@
 Wcrew = 400
 Wpayload = 6802
 
-
-
+# This is an example of making a change to the code after copying it from the ripository
+# here's another change
 # Regression constants
 A = 2.392
 c = -.13
