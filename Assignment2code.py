@@ -2,8 +2,7 @@
 Wcrew = 400
 Wpayload = 6802
 
-# This is an example of making a change to the code after copying it from the ripository
-# here's another change
+# This is an example of what to do after you initially clone it. What I'm doing now simulates a team member making changes on their computer and then updating the code. 
 # Regression constants
 A = 2.392
 c = -.13
