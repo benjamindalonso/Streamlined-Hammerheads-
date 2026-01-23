@@ -2,7 +2,7 @@
 Wcrew = 400
 Wpayload = 6802
 
-# This is an example of what to do if someone else updated the code online and your version is now out old.
+
 
 # Regression constants
 A = 2.392
