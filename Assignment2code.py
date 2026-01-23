@@ -3,6 +3,8 @@ Wcrew = 400
 Wpayload = 6802
 
 # This is an example of what to do after you initially clone it. What I'm doing now simulates a team member making changes on their computer and then updating the code. 
+# Here it is one more time
+
 # Regression constants
 A = 2.392
 c = -.13
