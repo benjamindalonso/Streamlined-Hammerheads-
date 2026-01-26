@@ -1,4 +1,3 @@
-
 from cmath import exp
 
 # Crew and Payload Weights
@@ -83,23 +82,7 @@ Wfuel_reserved = Wfuel_total - Wfuel_used      # Reserve Fuel weight
 W_landing = Wn_W0 * Wo        # Landing weight
 
 empty_weight_fraction = We / Wo        # Empty weight fraction
-
-
-# Print results from weight estimation
-print("Gross Takeoff Weight: " + str(round(Wo)) + " lbs")
-print("Empty Weight: " + str(round(We)) + " lbs")
-print("Regression's Empty Weight Fraction (We/W0): " + str(round(empty_weight_fraction ,3)))
-print("Crew Weight: " + str(round(Wcrew)) + " lbs")
-print("Payload Weight: " + str(round(Wpayload)) + " lbs")
-print("Warm up Fuel Fraction (Wn/W0): " + str(round(warmup, 3)))
-print("Taxi Fuel Fraction (Wn/W0): " + str(round(taxi, 3)))
-print("Takeoff Fuel Fraction (Wn/W0): " + str(round(takeoff, 3)))
-print("Cruise Fuel Fraction (Wn/W0): " + str(round(cruise, 3)))
-print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3)))
-print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3)))
-print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3)))
-print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3)))
-
+empty_weight_fraction_percent = empty_weight_fraction * 100  # Empty weight fraction in percent
 
 # Plot Convergence
 import matplotlib.pyplot as plt
@@ -115,7 +98,7 @@ plt.tight_layout()
 plt.show()
 
 
-breakpoint = input("Press Enter to continue to Cost Estimates...")  # Pause before cost estimates
+
 
 
 # Cost Estimating Relationships
@@ -209,15 +192,27 @@ C_RDTE = (C_ENG + C_DEV + C_FT)         # RDT&E Total Cost
 C_TOTAL = (C_RDTE + C_TOOL + C_MFG)     # Total Program Cost
 
 # Weight Estimates Output
-
-print(f"\nFinal Takeoff Gross Weight: {Wo:.2f} lbs") # Print Final Takeoff Gross Weight
-print(f"Empty Weight Fraction: {E:.4f}") # Print Empty Weight Fraction
+print(f"\n--- Weight Estimates ---") # Print Weight Estimates Header
+print("Gross Takeoff Weight: " + str(round(Wo)) + " lbs")
 print(f"Empty Weight: {We:.2f} lbs") # Print Empty Weight
+print("Regression's Empty Weight Fraction (We/W0): " + str(round(empty_weight_fraction ,3)))
+print(f"Regression's Empty Weight Percentage: {empty_weight_fraction:.2f}%") # Print Regression's Empty Weight Percentage
 print(f"Landing Weight: {W_landing:.2f} lbs") # Print Landing Weight
 print(f"Total Fuel Weight: {Wfuel_total:.2f} lbs") # Print Total Fuel Weight
 print(f"Used Fuel Weight: {Wfuel_used:.2f} lbs") # Print Used Fuel Weight
 print(f"Reserve Fuel Weight: {Wfuel_reserved:.2f} lbs") # Print Reserve Fuel Weight
-print(f"Empty Weight Percentage: {empty_weight_fraction:.2f}%") # Print Empty Weight Percentage
+print("Crew Weight: " + str(round(Wcrew)) + " lbs")
+print("Payload Weight: " + str(round(Wpayload)) + " lbs")
+print("Warm up Fuel Fraction (Wn/W0): " + str(round(warmup, 3)))
+print("Taxi Fuel Fraction (Wn/W0): " + str(round(taxi, 3)))
+print("Takeoff Fuel Fraction (Wn/W0): " + str(round(takeoff, 3)))
+print("Cruise Fuel Fraction (Wn/W0): " + str(round(cruise, 3)))
+print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3)))
+print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3)))
+print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3)))
+print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3)))
+
+
 
 # Cost Estimates Output
 
@@ -229,4 +224,4 @@ print(f"RDT&E Total: ${C_RDTE:,.0f}") # Print RDT&E Total Cost
 print(f"\nTooling Cost: ${C_TOOL:,.0f}") # Print Tooling Cost
 print(f"Manufacturing Cost: ${C_MFG:,.0f}") # Print Manufacturing Cost
 print(f"\nTotal Program Cost: ${C_TOTAL:,.0f}") # Print Total Program Cost
-print(f"Unit Production Cost: ${unit_cost:,.0f}") # Print Unit Production Cost
+print(f"Unit Production Cost: ${unit_cost:,.0f}") # Pr
