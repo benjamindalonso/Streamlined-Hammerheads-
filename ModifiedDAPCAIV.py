@@ -73,17 +73,17 @@ def total_rdte_and_flyaway(
 
 
 # Input Parameters
-W_Empty = 85000        # Empty Weight lbs
-V = 1200                # Max Velocity kts (nm/hr)
-Q =       500          # Lesser of production quantity or number to be produced in five years
-FTA =       2        # Number of flight-test aircraft (usually 2-6)
-N_Eng =       500      # Total production quantity times number of engines per aircraft 
-T_Max =      43000       # Engine maximum thrust lbs
-M_Max =          1.6        # engine maximum mach number
-T_TurbInlet =      4059.67      # turbine inlet temperature R
-HoursFudgeFactor =     1.3 # Fudge factor to account for complex materials. Aluminum = 1, Graphite-Epoxy = 1.1-1.8, Fiberglass = 1.1-1.2, Steel = 1.5-2, Titanium = 1.1-1.8
-InflationFudgeFactor = 2 # Assume 1 dollar in 2012 is worth 2 dollars in 2035
-StealthFudgeFactor = 1.2 # Fudge factor to account for stealth requirements in manufacturing
+W_Empty = 85000             # Empty Weight lbs
+V = 1200                    # Max Velocity kts (nm/hr)
+Q = 500                     # Lesser of production quantity or number to be produced in five years
+FTA = 2                     # Number of flight-test aircraft (usually 2-6)
+N_Eng = 500                 # Total production quantity times number of engines per aircraft 
+T_Max = 43000               # Engine maximum thrust lbs
+M_Max = 1.6                 # engine maximum mach number
+T_TurbInlet = 4059.67       # turbine inlet temperature R
+HoursFudgeFactor = 1.3      # Fudge factor to account for complex materials. Aluminum = 1, Graphite-Epoxy = 1.1-1.8, Fiberglass = 1.1-1.2, Steel = 1.5-2, Titanium = 1.1-1.8
+InflationFudgeFactor = 2    # Assume 1 dollar in 2012 is worth 2 dollars in 2035
+StealthFudgeFactor = 1.2    # Fudge factor to account for stealth requirements in manufacturing
 
 # Hourly wrap rates (include salaries, benefits, overhead, and administrative costs)
 year = 2035                    # Target year of opperation
