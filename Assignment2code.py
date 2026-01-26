@@ -1,10 +1,10 @@
-
 from cmath import exp
 
 # Crew and Payload Weights
 
 Wcrew = 400          # Crew weight in lbs
-Wpayload = 6802      # Payload weight in lbs
+Wpayload = 6802      # Payload weight in lbs (based on RFP requirement for armament)
+
 
 # Regression constants
 
@@ -20,13 +20,15 @@ taxi     = 0.99
 
 takeoff  = 0.99
 
-climb    = 0.96
+climb    = 0.94
 
-combat   = 0.90
+combat   = 0.92
 
 descent  = 0.99
 
 landing  = 0.995
+
+goaround = 0.99             # This would be if landing is aborted and pilot has to re attempt
 
 
 # Breguet Equations (Cruise and Loiter)
@@ -37,7 +39,7 @@ Cl_Cd = 14          # Lift-to-Drag Ratio during cruise and loiter
 R = 2000            # Range in nmi
 ct = 0.8            # Thrust specific fuel consumtion in nmi/hr
 V = 550             # Velocity in nmi/hr
-E = .4              # Time Spent Loitering in hours
+E = .333            # Time Spent Loitering in hours
 
 cruise = np.exp((-R*ct) / (V*Cl_Cd))  
 
@@ -45,58 +47,58 @@ loiter = np.exp((-E*ct) / (Cl_Cd))
 
 # Mission weight fraction
 
-Wn_W0 = (warmup * taxi * takeoff * climb * cruise * combat * loiter * descent * landing)
+Wn_W0 = (warmup * taxi * takeoff * climb * cruise * combat * loiter * descent * goaround * goaround * landing)       # 2 goaround allowance per the RFP requirements
 
 # Fuel fractions
 
 F_used = 1 - Wn_W0          # Used fuel fraction
 F = 1.06 * F_used           # Total fuel fraction with reserves
 
-# Initial Weight Guess
+# Initial Weight Guess and Convergence Loop
 
 Wo = 75000                  # Initial guess for Takeoff Gross Weight in lbs
 Wo_history = []             # To store Wo values for convergence plot
 previous_Wo = 0             # To track previous Wo for convergence check
+err = 1e-6  
+delta = 2*err                # Convergence error tolerance
 
+while delta > err:              # While loop to solve for takeoff weight
+    Wo_history.append(Wo)
 
-for iteration in range(100):     # Maximum of 100 iterations
-    Wo_history.append(Wo)        # Store current Wo for convergence plot
-    E = A * Wo**c                # Empty weight fraction calculation
-    denominator = 1 - F - E      # Denominator for Wo calculation
-    
-    Wo_new = (Wcrew + Wpayload) / denominator        # New Takeoff Gross Weight calculation
+    We_Wo = A * Wo ** c
+    Wo_new = (Wcrew + Wpayload) / (1 - F - We_Wo)
+    delta = abs(Wo_new - Wo) / abs(Wo_new)
+    Wo = Wo_new
 
-    if abs(Wo_new - Wo) < 1:                                 # Convergence check (1 lb tolerance)
-        print(f"Converged at iteration {iteration+1}")       # Print iteration count 
-        break
-
-    Wo = Wo_new          # Update Wo for next iteration
-
+Wo_history = np.array(Wo_history)
 
 
 # Final weights
 
-We = E * Wo      # Empty Weight
+We = We_Wo * Wo      # Empty Weight
 Wfuel_total = F * Wo          # Total fuel weight
 Wfuel_used = F_used * Wo      # Used Fuel weight
 Wfuel_reserved = Wfuel_total - Wfuel_used      # Reserve Fuel weight
 W_landing = Wn_W0 * Wo        # Landing weight
 
-empty_weight_fraction = We / Wo * 100        # Empty weight percentage
-
-    
-Wo_history = np.array(Wo_history)  # convert list to array
+empty_weight_fraction = We / Wo        # Empty weight fraction
+empty_weight_fraction_percent = empty_weight_fraction * 100  # Empty weight fraction in percent
 
 # Plot Convergence
 import matplotlib.pyplot as plt
-plt.figure(figsize=(8,4))       # Set figure size
-plt.title('Weight Estimate Convergence')         # Set title
-plt.xlabel("Iteration") # Set x label
-plt.ylabel("Initial Takeoff Weight (lbs)") # Set y label
-plt.plot(Wo_history, label='W0', linestyle='-', linewidth=2, marker=None, markersize=8)      # Plot Wo history
-plt.grid(True)        # Add grid
-plt.legend(loc='best')       # Add legend
-plt.show()        # Display plot
+# Plot convergence
+plt.figure(figsize=(8, 4))
+plt.title("Weight Estimate Convergence")
+plt.xlabel("Iteration")
+plt.ylabel("W₀ (kg)")
+plt.plot(Wo_history, label="W₀", linewidth=2)
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
+
 
 
 # Cost Estimating Relationships
@@ -190,15 +192,27 @@ C_RDTE = (C_ENG + C_DEV + C_FT)         # RDT&E Total Cost
 C_TOTAL = (C_RDTE + C_TOOL + C_MFG)     # Total Program Cost
 
 # Weight Estimates Output
-
-print(f"\nFinal Takeoff Gross Weight: {Wo:.2f} lbs") # Print Final Takeoff Gross Weight
-print(f"Empty Weight Fraction: {E:.4f}") # Print Empty Weight Fraction
+print(f"\n--- Weight Estimates ---") # Print Weight Estimates Header
+print("Gross Takeoff Weight: " + str(round(Wo)) + " lbs")
 print(f"Empty Weight: {We:.2f} lbs") # Print Empty Weight
+print("Regression's Empty Weight Fraction (We/W0): " + str(round(empty_weight_fraction ,3)))
+print(f"Regression's Empty Weight Percentage: {empty_weight_fraction:.2f}%") # Print Regression's Empty Weight Percentage
 print(f"Landing Weight: {W_landing:.2f} lbs") # Print Landing Weight
 print(f"Total Fuel Weight: {Wfuel_total:.2f} lbs") # Print Total Fuel Weight
 print(f"Used Fuel Weight: {Wfuel_used:.2f} lbs") # Print Used Fuel Weight
 print(f"Reserve Fuel Weight: {Wfuel_reserved:.2f} lbs") # Print Reserve Fuel Weight
-print(f"Empty Weight Percentage: {empty_weight_fraction:.2f}%") # Print Empty Weight Percentage
+print("Crew Weight: " + str(round(Wcrew)) + " lbs")
+print("Payload Weight: " + str(round(Wpayload)) + " lbs")
+print("Warm up Fuel Fraction (Wn/W0): " + str(round(warmup, 3)))
+print("Taxi Fuel Fraction (Wn/W0): " + str(round(taxi, 3)))
+print("Takeoff Fuel Fraction (Wn/W0): " + str(round(takeoff, 3)))
+print("Cruise Fuel Fraction (Wn/W0): " + str(round(cruise, 3)))
+print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3)))
+print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3)))
+print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3)))
+print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3)))
+
+
 
 # Cost Estimates Output
 
@@ -210,4 +224,4 @@ print(f"RDT&E Total: ${C_RDTE:,.0f}") # Print RDT&E Total Cost
 print(f"\nTooling Cost: ${C_TOOL:,.0f}") # Print Tooling Cost
 print(f"Manufacturing Cost: ${C_MFG:,.0f}") # Print Manufacturing Cost
 print(f"\nTotal Program Cost: ${C_TOTAL:,.0f}") # Print Total Program Cost
-print(f"Unit Production Cost: ${unit_cost:,.0f}") # Print Unit Production Cost
+print(f"Unit Production Cost: ${unit_cost:,.0f}") # Pr
