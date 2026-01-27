@@ -74,7 +74,7 @@ def total_rdte_and_flyaway(
 
 
 # Input Parameters
-W_Empty = 54514                # Empty Weight lbs (38,199 for design B, 54514 for A))
+W_Empty = 42970                # Empty Weight lbs (38,199 for design B, 42970 for A))
 V = 1290                       # Max Velocity kts (nm/hr) (900 for design B, 1290 for A)
 Q = 500                        # Lesser of production quantity or number to be produced in five years
 FTA = 2                        # Number of flight-test aircraft (usually 2-6)
