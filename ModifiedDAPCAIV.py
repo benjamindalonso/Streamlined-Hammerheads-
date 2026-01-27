@@ -23,17 +23,17 @@ def qc_hours(HM):
 
 def development_support_cost(W_Empty, V):
     """Development support cost CD (Dollars)"""
-    return 91.3 * (W_Empty ** 0.630) * (V ** 1.3) * StealthFudgeFactor
+    return 91.3 * (W_Empty ** 0.630) * (V ** 1.3) * StealthFudgeFactor * InflationFudgeFactor
 
 
 def flight_test_cost(W_Empty, V, FTA):
     """Flight test cost CF (Dollars)"""
-    return 2498 * (W_Empty ** 0.325) * (V ** 0.822) * (FTA ** 1.21) * StealthFudgeFactor
+    return 2498 * (W_Empty ** 0.325) * (V ** 0.822) * (FTA ** 1.21) * StealthFudgeFactor * InflationFudgeFactor
 
 
 def manufacturing_materials_cost(W_Empty, V, Q):
     """Manufacturing materials cost CM (Dolalrs)"""
-    return 22.1 * (W_Empty ** 0.921) * (V ** 0.621) * (Q ** 0.799) * StealthFudgeFactor
+    return 22.1 * (W_Empty ** 0.921) * (V ** 0.621) * (Q ** 0.799) * StealthFudgeFactor * InflationFudgeFactor
 
 
 def engine_production_cost(T_Max, M_Max, T_TurbInlet):
@@ -44,13 +44,13 @@ def engine_production_cost(T_Max, M_Max, T_TurbInlet):
         0.969 * T_TurbInlet -
         2228
     )
-    return (3112 * inner) 
+    return (3112 * inner) * StealthFudgeFactor * InflationFudgeFactor
 
 
 def total_rdte_and_flyaway(
     HE, HT, HM, HQ,
     RE, RT, RM, RQ,
-    CD, CF, CM, Ceng_per_engine, N_Eng, C_Avionics
+    CD, CF, CM, Ceng_per_engine, N_Eng
 ):
     """Total RDT&E + flyaway cost (Dollars)"""
     labor_cost = (
@@ -64,8 +64,7 @@ def total_rdte_and_flyaway(
         CD +
         CF +
         CM +
-        (Ceng_per_engine * N_Eng) +
-        C_Avionics
+        (Ceng_per_engine * N_Eng)
     )
     
     return labor_cost + non_labor
@@ -84,6 +83,7 @@ T_TurbInlet = 4059.67       # turbine inlet temperature R
 HoursFudgeFactor = 1.3      # Fudge factor to account for complex materials. Aluminum = 1, Graphite-Epoxy = 1.1-1.8, Fiberglass = 1.1-1.2, Steel = 1.5-2, Titanium = 1.1-1.8
 InflationFudgeFactor = 2    # Assume 1 dollar in 2012 is worth 2 dollars in 2035
 StealthFudgeFactor = 1.2    # Fudge factor to account for stealth requirements in manufacturing
+InflationFudgeFactor = 2    # Assume 1 dollar in 2012 is worth 2 dollars in 2035
 
 # Hourly wrap rates (include salaries, benefits, overhead, and administrative costs)
 year = 2035                    # Target year of opperation
@@ -91,9 +91,6 @@ RT   = 2.883 * year - 5666     # Tooling
 RE   = 2.576 * year - 5058     # Engineering
 RQC  = 2.60  * year - 5112     # QC
 RM   = 2.316 * year - 4552     # Manufacturing
-
-# Avionics cost
-C_Avionics = 8000 * W_Empty * InflationFudgeFactor  # Rough estimate of avionics cost in dollars
 
 # Do calculations
 HE  = engineering_hours(W_Empty, V, Q)
@@ -105,13 +102,17 @@ CF  = flight_test_cost(W_Empty, V, FTA)
 CM  = manufacturing_materials_cost(W_Empty, V, Q)
 Ceng_per_engine = engine_production_cost(T_Max, M_Max, T_TurbInlet)    # cost per engine
 
-total_cost = total_rdte_and_flyaway(HE, HT, HM, HQ, RE, RT, RM, RQC,CD, CF, CM, Ceng_per_engine, N_Eng, C_Avionics)
+total_cost = total_rdte_and_flyaway(HE, HT, HM, HQ, RE, RT, RM, RQC,CD, CF, CM, Ceng_per_engine, N_Eng)
 
 # Calculate dollar cost for each labor category
 cost_engineering = HE * RE
 cost_tooling     = HT * RT
 cost_manufacturing = HM * RM
 cost_qc          = HQ * RQC
+
+# Estimate avionics cost to be 30 percent of the total cost
+C_Avionics = (3/7)*total_cost
+total_cost = total_cost + C_Avionics # Update total cost to now include avionics 
 
 # Print results
 print("\n=== DAPCA-IV COST ESTIMATE (2035 dollars) ===")
