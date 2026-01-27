@@ -20,9 +20,9 @@ taxi     = 0.99
 
 takeoff  = 0.99
 
-climb    = 0.96
+climb    = 0.96             
 
-combat   = 0.94
+combat   = 0.96             # Assumed same as climb
 
 descent  = 0.99
 
@@ -35,7 +35,7 @@ goaround = 0.99             # This would be if landing is aborted and pilot has 
 
 import numpy as np
 
-Cl_Cd = 11    # Lift-to-Drag Ratio during cruise and loiter
+Cl_Cd = 10    # Lift-to-Drag Ratio during cruise and loiter
 R = 2000            # Range in nmi
 ct = 0.8            # Thrust specific fuel consumtion in nmi/hr
 V = 550             # Velocity in nmi/hr
@@ -56,7 +56,7 @@ F = 1.06 * F_used           # Total fuel fraction with reserves
 
 # Initial Weight Guess and Convergence Loop
 
-Wo = 100000             # Initial guess for Takeoff Gross Weight in lbs
+Wo = 80000           # Initial guess for Takeoff Gross Weight in lbs
 Wo_history = []             # To store Wo values for convergence plot
 previous_Wo = 0             # To track previous Wo for convergence check
 err = 1e-6  
@@ -84,21 +84,8 @@ W_landing = Wn_W0 * Wo        # Landing weight
 empty_weight_fraction = We / Wo        # Empty weight fraction
 empty_weight_fraction_percent = empty_weight_fraction * 100  # Empty weight fraction in percent
 
-# Plot Convergence
-import matplotlib.pyplot as plt
-# Plot convergence
-plt.figure(figsize=(8, 4))
-plt.title("Weight Estimate Convergence")
-plt.xlabel("Iteration")
-plt.ylabel("W₀ (kg)")
-plt.plot(Wo_history, label="W₀", linewidth=2)
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
-plt.show()
-
-
 # Weight Estimates Output
+print("Lift to Drag Ratio (Cl/Cd): " + str(Cl_Cd))
 print(f"\n--- Weight Estimates ---") # Print Weight Estimates Header
 print("Gross Takeoff Weight: " + str(round(Wo)) + " lbs")
 print(f"Empty Weight: {We:.2f} lbs") # Print Empty Weight
@@ -118,3 +105,19 @@ print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3)))
 print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3)))
 print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3)))
 print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3)))
+
+# Plot Convergence
+import matplotlib.pyplot as plt
+# Plot convergence
+plt.figure(figsize=(8, 4))
+plt.title("Weight Estimate Convergence")
+plt.xlabel("Iteration")
+plt.ylabel("W₀ (kg)")
+plt.plot(Wo_history, label="W₀", linewidth=2)
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
+
