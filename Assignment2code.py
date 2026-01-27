@@ -110,9 +110,9 @@ print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3)))
 import matplotlib.pyplot as plt
 # Plot convergence
 plt.figure(figsize=(8, 4))
-plt.title("Weight Estimate Convergence")
+plt.title("Takeoff Weight Convergence")
 plt.xlabel("Iteration")
-plt.ylabel("W₀ (kg)")
+plt.ylabel("W₀ (lbf)")
 plt.plot(Wo_history, label="W₀", linewidth=2)
 plt.grid(True)
 plt.legend()
