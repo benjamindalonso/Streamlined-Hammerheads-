@@ -35,10 +35,10 @@ goaround = 0.99             # This would be if landing is aborted and pilot has 
 
 import numpy as np
 
-Cl_Cd = 9    # Lift-to-Drag Ratio during cruise and loiter
-R = 1400            # Range in nmi
-ct = 1            # Thrust specific fuel consumtion in nmi/hr
-V = 550             # Velocity in nmi/hr
+Cl_Cd = 14   # Lift-to-Drag Ratio during cruise and loiter (14 for design B, 9 for A)
+R = 2000            # Range in nmi 
+ct = 0.8            # Thrust specific fuel consumtion in nmi/hr (0.8 for design B, 1 for A)
+V = 550             # Cruise Velocity in nmi/hr (550 for design B, 1000 for A)
 E = .333            # Time Spent Loitering in hours
 
 cruise = np.exp((-R*ct) / (V*Cl_Cd))  
