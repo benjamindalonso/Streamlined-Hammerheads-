@@ -103,7 +103,7 @@ print(f"\n--- Weight Estimates ---") # Print Weight Estimates Header
 print("Gross Takeoff Weight: " + str(round(Wo)) + " lbs")
 print(f"Empty Weight: {We:.2f} lbs") # Print Empty Weight
 print("Regression's Empty Weight Fraction (We/W0): " + str(round(empty_weight_fraction ,3)))
-print(f"Regression's Empty Weight Percentage: {empty_weight_fraction:.2f}%") # Print Regression's Empty Weight Percentage
+print(f"Regression's Empty Weight Percentage: {empty_weight_fraction_percent:.2f}%") # Print Regression's Empty Weight Percentage
 print(f"Landing Weight: {W_landing:.2f} lbs") # Print Landing Weight
 print(f"Total Fuel Weight: {Wfuel_total:.2f} lbs") # Print Total Fuel Weight
 print(f"Used Fuel Weight: {Wfuel_used:.2f} lbs") # Print Used Fuel Weight
