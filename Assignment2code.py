@@ -8,27 +8,27 @@ Wpayload = 6802      # Payload weight in lbs (based on RFP requirement for armam
 
 # Regression constants
 
-A = 2.392
+A = 2.392 
 
 c = -.13
 
 # Mission segment weight fractions
 
-warmup   = 0.99
+warmup   = 0.99  # Warm up fuel fraction (Wn/W0)
 
-taxi     = 0.99
+taxi     = 0.99  # Taxi fuel fraction (Wn/W0)
 
-takeoff  = 0.99
+takeoff  = 0.99  # Takeoff fuel fraction (Wn/W0)
 
-climb    = 0.96
+climb    = 0.96  # Climb fuel fraction (Wn/W0)
 
-combat   = 0.94
+combat   = 0.94  # Combat fuel fraction (Wn/W0)
 
-descent  = 0.99
+descent  = 0.99  # Descent fuel fraction (Wn/W0)
 
-landing  = 0.995
+landing  = 0.995 # Landing fuel fraction (Wn/W0)
 
-goaround = 0.99             # This would be if landing is aborted and pilot has to re attempt
+goaround = 0.99  # Go Around fuel fraction (Wn/W0) (This would be if landing is aborted and pilot has to re attempt landing)
 
 
 # Breguet Equations (Cruise and Loiter)
@@ -41,13 +41,13 @@ ct = 0.8            # Thrust specific fuel consumtion in nmi/hr
 V = 550             # Velocity in nmi/hr
 E = .333            # Time Spent Loitering in hours
 
-cruise = np.exp((-R*ct) / (V*Cl_Cd))  
+cruise = np.exp((-R*ct) / (V*Cl_Cd))  # Cruise fuel fraction (Wn/W0)
 
-loiter = np.exp((-E*ct) / (Cl_Cd))    
+loiter = np.exp((-E*ct) / (Cl_Cd))    # Loiter fuel fraction (Wn/W0)
 
 # Mission weight fraction
 
-Wn_W0 = (warmup * taxi * takeoff * climb * cruise * combat * loiter * descent * goaround * goaround * landing)       # 2 goaround allowance per the RFP requirements
+Wn_W0 = (warmup * taxi * takeoff * climb * cruise * combat * loiter * descent * goaround * goaround * landing)  # Overall mission fuel fraction (Wn/W0) (2 goaround allowance per the RFP requirements)
 
 # Fuel fractions
 
@@ -56,21 +56,21 @@ F = 1.06 * F_used           # Total fuel fraction with reserves
 
 # Initial Weight Guess and Convergence Loop
 
-Wo = 100000             # Initial guess for Takeoff Gross Weight in lbs
+Wo = 100000                 # Initial guess for Takeoff Gross Weight in lbs
 Wo_history = []             # To store Wo values for convergence plot
 previous_Wo = 0             # To track previous Wo for convergence check
 err = 1e-6  
-delta = 2*err                # Convergence error tolerance
+delta = 2*err               # Convergence error tolerance
 
-while delta > err:              # While loop to solve for takeoff weight
-    Wo_history.append(Wo)
+while delta > err:          # While loop to solve for takeoff weight
+    Wo_history.append(Wo)   # Store current Wo for convergence plot
 
-    We_Wo = A * Wo ** c
-    Wo_new = (Wcrew + Wpayload) / (1 - F - We_Wo)
-    delta = abs(Wo_new - Wo) / abs(Wo_new)
-    Wo = Wo_new
+    We_Wo = A * Wo ** c  # Empty weight fraction from regression
+    Wo_new = (Wcrew + Wpayload) / (1 - F - We_Wo) # New Takeoff Gross Weight calculation
+    delta = abs(Wo_new - Wo) / abs(Wo_new) # Relative change for convergence check
+    Wo = Wo_new            # Update Wo for next iteration
 
-Wo_history = np.array(Wo_history)
+Wo_history = np.array(Wo_history) # Convert history to numpy array for plotting
 
 
 # Final weights
@@ -87,11 +87,11 @@ empty_weight_fraction_percent = empty_weight_fraction * 100  # Empty weight frac
 # Plot Convergence
 import matplotlib.pyplot as plt
 # Plot convergence
-plt.figure(figsize=(8, 4))
-plt.title("Weight Estimate Convergence")
+plt.figure(figsize=(10, 6))
+plt.title("Takeoff Weight Estimate Convergence")
 plt.xlabel("Iteration")
-plt.ylabel("W₀ (kg)")
-plt.plot(Wo_history, label="W₀", linewidth=2)
+plt.ylabel("W0 (lbs)")
+plt.plot(Wo_history, label="W0", linewidth=2)
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
@@ -108,13 +108,14 @@ print(f"Landing Weight: {W_landing:.2f} lbs") # Print Landing Weight
 print(f"Total Fuel Weight: {Wfuel_total:.2f} lbs") # Print Total Fuel Weight
 print(f"Used Fuel Weight: {Wfuel_used:.2f} lbs") # Print Used Fuel Weight
 print(f"Reserve Fuel Weight: {Wfuel_reserved:.2f} lbs") # Print Reserve Fuel Weight
-print("Crew Weight: " + str(round(Wcrew)) + " lbs")
-print("Payload Weight: " + str(round(Wpayload)) + " lbs")
-print("Warm up Fuel Fraction (Wn/W0): " + str(round(warmup, 3)))
-print("Taxi Fuel Fraction (Wn/W0): " + str(round(taxi, 3)))
-print("Takeoff Fuel Fraction (Wn/W0): " + str(round(takeoff, 3)))
-print("Cruise Fuel Fraction (Wn/W0): " + str(round(cruise, 3)))
-print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3)))
-print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3)))
-print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3)))
-print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3)))
+print("Crew Weight: " + str(round(Wcrew)) + " lbs") # Print Crew Weight
+print("Payload Weight: " + str(round(Wpayload)) + " lbs") # Print Payload Weight
+print("Warm up Fuel Fraction (Wn/W0): " + str(round(warmup, 3))) # Print Warm up Fuel Fraction
+print("Taxi Fuel Fraction (Wn/W0): " + str(round(taxi, 3))) # Print Taxi Fuel Fraction
+print("Takeoff Fuel Fraction (Wn/W0): " + str(round(takeoff, 3))) # Print Takeoff Fuel Fraction
+print("Climb Fuel Fraction (Wn/W0): " + str(round(climb, 3))) # Print Climb Fuel Fraction
+print("Cruise Fuel Fraction (Wn/W0): " + str(round(cruise, 3))) # Print Cruise Fuel Fraction
+print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3))) # Print Combat Fuel Fraction
+print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3))) # Print Loiter Fuel Fraction
+print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3))) # Print Go Around Fuel Fraction
+print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3))) # Print Landing Fuel Fraction
