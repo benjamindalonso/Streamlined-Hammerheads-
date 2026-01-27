@@ -74,15 +74,15 @@ def total_rdte_and_flyaway(
 
 
 # Input Parameters
-W_Empty = 54514                # Empty Weight lbs (67,822 for design B)
-V = 1290                       # Max Velocity kts (nm/hr) (900 for design B)
+W_Empty = 54514                # Empty Weight lbs (38,199 for design B, 54514 for A))
+V = 1290                       # Max Velocity kts (nm/hr) (900 for design B, 1290 for A)
 Q = 500                        # Lesser of production quantity or number to be produced in five years
 FTA = 2                        # Number of flight-test aircraft (usually 2-6)
 N_Eng = 1000                   # Total production quantity times number of engines per aircraft (500 for design B)
-T_Max = 60000                  # Engine maximum thrust lbs (43,000 for design B)
+T_Max = 60000                  # Engine maximum thrust lbs (43,000 for design B, 60,000 for A)
 M_Max = 2                      # Engine maximum mach number
 T_TurbInlet = 4059.67          # Turbine inlet temperature R
-HoursFudgeFactor = 1.5         # Fudge factor to account for complex materials. Aluminum = 1, Graphite-Epoxy = 1.1-1.8, Fiberglass = 1.1-1.2, Steel = 1.5-2, Titanium = 1.1-1.8 (1.1 for design B)
+HoursFudgeFactor = 1.5         # Fudge factor to account for complex materials. Aluminum = 1, Graphite-Epoxy = 1.1-1.8, Fiberglass = 1.1-1.2, Steel = 1.5-2, Titanium = 1.1-1.8 (1.1 for design B, 1.5 for A)
 InflationFudgeFactor = 1.43    # Assume 1 dollar in 2012 is worth 1.43 dollars in 2026
 StealthFudgeFactor = 1.2       # Fudge factor to account for stealth requirements in manufacturing
 
