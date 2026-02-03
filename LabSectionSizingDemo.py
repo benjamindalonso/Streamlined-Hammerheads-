@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Parameter definitions (Add any additional variables to this list)
+
 AR = 2.5        # From openVSP
 s = 40          # Wing span from openVSP
 s_ref = 740     # From openVSP
@@ -8,21 +10,24 @@ S_wet = 3144    # Estimated wetted area from DragPolars.py
 c_f = 0.0040    # From table on resources doc
 C_D_0 = c_f * (S_wet / s_ref)
 print("Zero-lift drag coefficient C_D_0:", C_D_0)
-
 N_eng = 1  # Number of engines
 k_s = 1.1  # Based on RFP (10% above stall speed)
 C_L_max = 1.6 # An estimate based on other fighter aircraft
-G = 0.012  # Gradient (%)
-e = 0.8  # Oswald efficiency factor
-coef_1_climb = (1/0.8) * (N_eng / (N_eng - 1)) * ((k_s**2) / C_L_max * C_D_0 + C_L_max / (np.pi * AR * e * k_s**2) + G)
+G = 0.15  # Gradient (%) for fighter jet 
+e = 0.75  # Oswald efficiency factor for fighter jet
+coef_1_climb = (1/e) * (N_eng / (N_eng - 1)) * ((k_s**2) / C_L_max * C_D_0 + C_L_max / (np.pi * AR * e * k_s**2) + G)
 print("Climb gradient coefficient:", coef_1_climb)
-
 WS = np.linspace(1,300,30)
+W0 = 67822  # Maximum takeoff weight from Assignment 2
+rhoRatio = 1 # assume standard day at sea level
+TOP25 = 1092/37.5 # Parametric value for takeoff performance on a cvn-78 carrier 
 
-TW_takeoff = 0.001644*WS
-TW_landing = 295.75*np.ones(30)
-TW_climb = coef_1_climb*np.ones(30)
-TW_cruise = 8.4566/WS + 0.0003865*WS
+
+# These equations need to be filled in after you find out the relationship between T/w and W/S for each constraint
+TW_takeoff = WS / (TOP25 * rhoRatio * C_L_max)
+TW_landing = 
+TW_climb = 
+TW_cruise = 
 
 
 plt.figure(figsize=(8,4))
