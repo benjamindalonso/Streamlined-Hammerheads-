@@ -34,19 +34,22 @@ n = np.sqrt(1 + ((V_turn * Turn_rate) / g)**2)
 TW_takeoff = WS / (TOP25 * rhoRatio * C_L_max) # done by Mark
 WS_landing = ((rhoRatio * C_L_max)/(80*0.6)) * (Sland-1000)
 # Climb Constraint ======================================================
-def climb_constraint(MTOW,C_D0,CLmax,MLW,airdens,k):
+k = 1/(np.pi*AR*e)
+def climb_constraint(MTOW,C_D0,CLmax,MLW,airdens,k,vert_speed):
     k_s = 1.1  # stall safety factor
     # C_D0 is zero drag lift
     C_L_TO = CLmax # take-off maximum lift
     W = MTOW
     W_land = MLW # mean landing weight
     # airden is air density
-    G = (10/3)/(((2*k_s*W)/(airdens*C_L_TO)-(10/3)**2)**(1/2)) # Climb Gradient
+    # k is not defined in slides
+    # vert_speed is in ft/s
+    G = (vert_speed)/(((2*k_s*W)/(airdens*C_L_TO)-(vert_speed)**2)**(1/2)) # Climb Gradient
     Climb_TW = ((k_s**2)*C_D0)/C_L_TO + (k*C_L_TO)/(k_s**2) + G # Climb thrust to weight
     Climb_TW = Climb_TW*(W_land/W)*(1/0.80) # climb thrust to weight with correction factors
     return Climb_TW
 #========================================================================
-TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.002377,0.01)/WS
+TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.02377,k,200/60)/WS
 TW_turn = q * (C_D_0 / WS + k * (n / q)**2 * WS) #done by Aiden
 
 # ===================== cruise constraint (M=1.6 30,000 ft) =====================
@@ -86,7 +89,7 @@ plt.xlabel("W/S $(lb/ft^2)$")
 plt.ylabel("T/W")
 plt.plot(WS, TW_takeoff, label='Takeoff field length', linestyle='-', linewidth=2)
 plt.axvline(x=WS_landing, color='green', linestyle='--', linewidth=2, label=f'Landing')
-plt.plot(WS,TW_climb,color = 'blue', linestyle='-.',linewidth=2, label='Climb Constraint')
+plt.plot(WS,TW_climb,color = 'blue', linestyle='-.',linewidth=2, label='200 FPM Initial Climb')
 plt.plot(WS, TW_cruise, color='red', linestyle=':', linewidth=2, label='Cruise (M=1.6 @ 30kft)')
 plt.plot(WS,TW_turn,color = 'orange', linestyle='-.',linewidth=2, label='Turn Constraint')
 plt.ylim(0, 1.5)
