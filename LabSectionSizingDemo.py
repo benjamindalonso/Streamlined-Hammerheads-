@@ -15,17 +15,17 @@ k_s = 1.1  # Based on RFP (10% above stall speed)
 C_L_max = 1.6 # An estimate based on other fighter aircraft
 G = 0.15  # Gradient (%) for fighter jet 
 e = 0.75  # Oswald efficiency factor for fighter jet
-WS = np.linspace(1,300,30)
+WS = np.linspace(1,100,100)
 W0 = 67822  # Maximum takeoff weight from Assignment 2
 rhoRatio = 1 # assume standard day at sea level
 TOP25 = 1092/37.5 # Parametric value for takeoff performance on a cvn-78 carrier 
 
 
 # These equations need to be filled in after you find out the relationship between T/w and W/S for each constraint
-TW_takeoff = WS / (TOP25 * rhoRatio * C_L_max)
-TW_landing = 0 # Change after you find this relationship
-TW_climb = 0 # Change after you find this relationship
-TW_cruise = 0 # Change after you find this relationship
+TW_takeoff = WS / (TOP25 * rhoRatio * C_L_max) # done by Mark
+TW_landing = 0.1 # Change after you find this relationship
+TW_climb = 0.1 # Change after you find this relationship
+TW_cruise = 0.1 # Change after you find this relationship
 
 
 plt.figure(figsize=(8,4))
@@ -33,10 +33,8 @@ plt.title('T/W - W/S')
 plt.xlabel("W/S $(lb/ft^2)$")
 plt.ylabel("T/W")
 plt.plot(WS, TW_takeoff, label='Takeoff field length', linestyle='-', linewidth=2)
-plt.plot(TW_landing, np.linspace(0,1,30), label='Landing field length', linestyle='-', linewidth=2)
-plt.plot(WS, TW_climb, label='Takeoff climb', linestyle='-', linewidth=2)
-plt.plot(WS, TW_cruise, label='Cruise', linestyle='-', linewidth=2)
-plt.ylim(0, 0.5)
+# Add your other contraints here
+plt.ylim(0, 1.5)
 plt.legend(loc='best')
 plt.show()
 
