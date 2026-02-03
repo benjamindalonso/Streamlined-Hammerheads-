@@ -20,6 +20,14 @@ W0 = 67822  # Maximum takeoff weight from Assignment 2
 rhoRatio = 1 # assume standard day at sea level
 TOP25 = 1092/37.5 # Parametric value for takeoff performance on a cvn-78 carrier 
 Sland = 4000 # Target landing distance in feet without arresetment 
+g = 32.17
+rho_turn = 0.001267  # air density at 20,000 ft (slugs/ft^3)
+V_turn = 500        # Assume 500 ft/s from PrelimSizing code
+q = 0.5 * rho_turn * (V_turn**2) # Dynamic pressure
+Turn_rate = 0.1745 # in Rad/s from rfp's 10 deg/s
+k = 1 / (np.pi * e * AR) # Induced drag factor
+n = np.sqrt(1 + ((V_turn * Turn_rate) / g)**2)
+
 
 
 # These equations need to be filled in after you find out the relationship between T/w and W/S for each constraint
@@ -39,6 +47,7 @@ def climb_constraint(MTOW,C_D0,CLmax,MLW,airdens,k):
     return Climb_TW
 #========================================================================
 TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.002377,0.01)/WS
+TW_turn = q * (C_D_0 / WS + k * (n / q)**2 * WS) #done by Aiden
 
 # ===================== cruise constraint (M=1.6 30,000 ft) =====================
 
@@ -79,7 +88,7 @@ plt.plot(WS, TW_takeoff, label='Takeoff field length', linestyle='-', linewidth=
 plt.axvline(x=WS_landing, color='green', linestyle='--', linewidth=2, label=f'Landing')
 plt.plot(WS,TW_climb,color = 'blue', linestyle='-.',linewidth=2, label='Climb Constraint')
 plt.plot(WS, TW_cruise, color='red', linestyle=':', linewidth=2, label='Cruise (M=1.6 @ 30kft)')
+plt.plot(WS,TW_turn,color = 'orange', linestyle='-.',linewidth=2, label='Turn Constraint')
 plt.ylim(0, 1.5)
 plt.legend(loc='best')
 plt.show()
-
