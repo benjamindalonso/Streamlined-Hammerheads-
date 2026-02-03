@@ -109,3 +109,4 @@ plt.legend(loc='upper left', fontsize=10, framealpha=0.95)
 plt.tight_layout()
 plt.show()
 
+print('Swet:', Swet)
