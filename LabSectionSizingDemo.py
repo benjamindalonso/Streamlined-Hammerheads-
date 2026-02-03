@@ -15,8 +15,6 @@ k_s = 1.1  # Based on RFP (10% above stall speed)
 C_L_max = 1.6 # An estimate based on other fighter aircraft
 G = 0.15  # Gradient (%) for fighter jet 
 e = 0.75  # Oswald efficiency factor for fighter jet
-coef_1_climb = (1/e) * (N_eng / (N_eng - 1)) * ((k_s**2) / C_L_max * C_D_0 + C_L_max / (np.pi * AR * e * k_s**2) + G)
-print("Climb gradient coefficient:", coef_1_climb)
 WS = np.linspace(1,300,30)
 W0 = 67822  # Maximum takeoff weight from Assignment 2
 rhoRatio = 1 # assume standard day at sea level
