@@ -38,7 +38,7 @@ def climb_constraint(MTOW,C_D0,CLmax,MLW,airdens,k):
     Climb_TW = Climb_TW*(W_land/W)*(1/0.80) # climb thrust to weight with correction factors
     return Climb_TW
 #========================================================================
-TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.002377,0.01)
+TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.002377,0.01)/WS
 TW_cruise = 0.1 # Change after you find this relationship
 
 
