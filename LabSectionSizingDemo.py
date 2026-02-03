@@ -25,9 +25,9 @@ TOP25 = 1092/37.5 # Parametric value for takeoff performance on a cvn-78 carrier
 
 # These equations need to be filled in after you find out the relationship between T/w and W/S for each constraint
 TW_takeoff = WS / (TOP25 * rhoRatio * C_L_max)
-TW_landing = 
-TW_climb = 
-TW_cruise = 
+TW_landing = 0 # Change after you find this relationship
+TW_climb = 0 # Change after you find this relationship
+TW_cruise = 0 # Change after you find this relationship
 
 
 plt.figure(figsize=(8,4))
