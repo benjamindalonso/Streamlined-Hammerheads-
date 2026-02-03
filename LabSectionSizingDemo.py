@@ -25,7 +25,20 @@ Sland = 4000 # Target landing distance in feet without arresetment
 # These equations need to be filled in after you find out the relationship between T/w and W/S for each constraint
 TW_takeoff = WS / (TOP25 * rhoRatio * C_L_max) # done by Mark
 WS_landing = ((rhoRatio * C_L_max)/(80*0.6)) * (Sland-1000)
-TW_climb = 0.1 # Change after you find this relationship
+# Climb Constraint ======================================================
+def climb_constraint(MTOW,C_D0,CLmax,MLW,airdens,k):
+    k_s = 1.1  # stall safety factor
+    # C_D0 is zero drag lift
+    C_L_TO = CLmax # take-off maximum lift
+    W = MTOW
+    W_land = MLW # mean landing weight
+    # airden is air density
+    G = (10/3)/(((2*k_s*W)/(airdens*C_L_TO)-(10/3)**2)**(1/2)) # Climb Gradient
+    Climb_TW = ((k_s**2)*C_D0)/C_L_TO + (k*C_L_TO)/(k_s**2) + G # Climb thrust to weight
+    Climb_TW = Climb_TW*(W_land/W)*(1/0.80) # climb thrust to weight with correction factors
+    return Climb_TW
+#========================================================================
+TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.002377,0.01)
 TW_cruise = 0.1 # Change after you find this relationship
 
 
@@ -35,7 +48,7 @@ plt.xlabel("W/S $(lb/ft^2)$")
 plt.ylabel("T/W")
 plt.plot(WS, TW_takeoff, label='Takeoff field length', linestyle='-', linewidth=2)
 plt.axvline(x=WS_landing, color='green', linestyle='--', linewidth=2, label=f'Landing')
-# Add your other contraints here
+plt.plot(WS,TW_climb,color = 'blue', linestyle='-.',linewidth=2, label='Climb Constraint')
 plt.ylim(0, 1.5)
 plt.legend(loc='best')
 plt.show()
