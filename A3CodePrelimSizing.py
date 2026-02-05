@@ -71,11 +71,11 @@ MidMissionFuelFraction = 0.906 # Fuel fraction half way through cruise portion o
 Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction)
 Stall = Stall_Constraint(Clmax, rho, Vstall)
 Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
-Launch = Launch_Constraint()  # Fill in parameters
-Landing = Landing_Constraint()  # Fill in parameters
-Ceiling = Ceiling_Constraint()  # Fill in parameters
-Dash = Dash_Constraint()  # Fill in parameters
-Climb = Climb_Constraint()  # Fill in parameters
+#Launch = Launch_Constraint()  # Fill in parameters
+#Landing = Landing_Constraint()  # Fill in parameters
+#Ceiling = Ceiling_Constraint()  # Fill in parameters
+#Dash = Dash_Constraint()  # Fill in parameters
+#Climb = Climb_Constraint()  # Fill in parameters
 
 
 
