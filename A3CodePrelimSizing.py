@@ -46,6 +46,7 @@ def Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn
 
 
 # PARAMETERS
+# Add additional parameters to the bottom of the list as needed
 Clmax = 1.5 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
 rho = 0.0023769 # Air density at stall condition in slugs/ft^3
 Vstall = 135 # Airspeed at stall 
