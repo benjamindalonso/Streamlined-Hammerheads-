@@ -20,14 +20,25 @@ def Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, TakeoffFue
     Cruise_Constraint = ThrustToWeightCruise * ((TakeoffFuelFraction * ClimbFuelFraction)/(ThrustReduction))
     return Cruise_Constraint
 
-# Maneuvering Constraint
-def Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction):
-    n = math.sqrt((((TurnRate * Vturn)/g)**2) + 1)
-    q = (0.5 * rhoTurn * (Vturn ** 2))
-    Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction
-    ThrustToWeightTurn = ((q * Cd0Turn) / (Wing_LoadingTurn)) + ((k / q) * Wing_LoadingTurn * (n ** 2))
-    Maneuvering_Constraint = ThrustToWeightTurn * ((TakeoffFuelFraction * ClimbFuelFraction)/(ThrustReduction))
-    return Maneuvering_Constraint
+# Maneuvering Constraint (sustained and instant)
+def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, k, Wing_Loading, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction):
+    n = math.sqrt(((TurnRate * Vturn) / g)**2 + 1)
+    q = 0.5 * rho * (Vturn**2)
+    Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction 
+    
+    # Required T/W at maneuver alt
+    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (k * (n**2) / q * Wing_LoadingTurn)
+    
+    # Correct back to Sea Level Static T/W (T0/W0)
+    # (T/W)_turn * (Weight_at_maneuver / W0) * (1 / Thrust_Reduction)
+    TW_SLS = TW_turn * (TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction / ThrustReduction)
+    return TW_SLS
+
+def Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction):
+    n = math.sqrt(((TurnRate * Vturn) / g)**2 + 1)
+    q = 0.5 * rho * (Vturn**2)
+    WS_limit = (q * Clmax) / (n * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction)
+    return WS_limit
 
 # Launch Constraint
 def Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff):
@@ -83,13 +94,14 @@ ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 # CALCULATIONS
 Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction)
 Stall = Stall_Constraint(Clmax, rho, Vstall)
-Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 #Launch = Launch_Constraint()  # Fill in parameters
 Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
 Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
 Ceiling = Ceiling_Constraint(Cd0Cruise,k)
 #Dash = Dash_Constraint()  # Fill in parameters
 #Climb = Climb_Constraint()  # Fill in parameters
+Maneuver_Sustained = Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0Turn, k, Wing_Loading, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
+Maneuver_Instant = Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction)
 
 
 
@@ -106,8 +118,10 @@ plt.plot(Wing_Loading, Cruise, color='blue', linewidth=2.5,
          label='Cruise Constraint')
 
 # Plot maneuvering constraint 
-plt.plot(Wing_Loading, Maneuver, color='green', linewidth=2.5, 
-         label='Maneuvering Constraint')
+plt.plot(Wing_Loading, Maneuver_Sustained, color='green', linewidth=2.5, 
+         label='Maneuvering Constraint (sustained)')
+plt.axvline(x=Maneuver_Instant, color='purple', linestyle='-.', linewidth=2.5, 
+            label=f'Instant Maneuvering Constraint (W/S ≤ {Maneuver_Instant:.1f})')
 
 # Plot launch constraint (vertical line)
 plt.axvline(x=Launch, color='yellow', linewidth=2.5, 
@@ -124,7 +138,7 @@ plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingcons
 
 
 # Formatting
-plt.xlim(0, 80)                # Typical fighter range
+plt.xlim(0, 100)                # Typical fighter range
 plt.ylim(0, 1.2)                # T/W usually 0.8–1.2 for fighters
 plt.xlabel('Wing Loading  W/S  (psf)', fontsize=12)
 plt.ylabel('Thrust-to-Weight Ratio  T/W', fontsize=12)
