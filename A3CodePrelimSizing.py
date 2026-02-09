@@ -30,10 +30,13 @@ def Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn
     return Maneuvering_Constraint
 
 # Launch Constraint
-# Insert Launch Constraint def Here
+def Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff):
+    Launch_Constraint = (0.5) * rhoTropicalDay * ((Vend + Vwod + Vthrust)**2) * (ClmaxTakeOff) / 1.21
+    return Launch_Constraint
+
 
 # Landing Constraint finds wing loading for landing weights lbf,speeds ft/s, density slug/ft^3
-def landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
+def Landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
     S_land = 2*landWeight/(density*((maxLandSpeed/1.15)**2)*CLmaxLand)
     landWingLoading = GTOW/S_land
     return landWingLoading
@@ -56,6 +59,7 @@ def Ceiling_Constraint(Cd0Cruise,k):
 # Add additional parameters to the bottom of the list as needed
 Clmax = 1.5 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
 rho = 0.0023769 # Air density at stall condition in slugs/ft^3
+rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/ft^3 (for launch constraint)
 Vstall = 135 # Airspeed at stall 
 rhoCruise = 0.0007382 # Air density at cruise altitude in slugs/ft^3
 Vcruise = 550 # Cruise velocity in knots
@@ -70,8 +74,10 @@ Vturn = 500 # Velocity during the maneuver in feet per second
 Cd0Turn = 0.01 # Zero lift drag coefficient during the turn (I just used the openVSP value again)
 rhoTurn = 0.001267 # Slugs per ft^3 (Density at 20,000 ft - maneuvering altitude per rfp)
 MidMissionFuelFraction = 0.906 # Fuel fraction half way through cruise portion of mission (This is based on the rfp requirements for maneuvering being done at "mid mission weight")
-
-
+Vend = 135 # Catipult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catipult 
+Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
+Vthrust = 10 # Velocity added by engine thrust during catipult launch (Assumed to be 10 knots per Raymer page 136)
+ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 
 
 # CALCULATIONS
@@ -79,7 +85,8 @@ Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, Takeo
 Stall = Stall_Constraint(Clmax, rho, Vstall)
 Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 #Launch = Launch_Constraint()  # Fill in parameters
-Landing = landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
+Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
+Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
 Ceiling = Ceiling_Constraint(Cd0Cruise,k)
 #Dash = Dash_Constraint()  # Fill in parameters
 #Climb = Climb_Constraint()  # Fill in parameters
@@ -102,8 +109,12 @@ plt.plot(Wing_Loading, Cruise, color='blue', linewidth=2.5,
 plt.plot(Wing_Loading, Maneuver, color='green', linewidth=2.5, 
          label='Maneuvering Constraint')
 
+# Plot launch constraint (vertical line)
+plt.axvline(x=Launch, color='yellow', linewidth=2.5, 
+            label=f'Launch Constraint (W/S ≤ {Launch:.1f} psf)')
+
 # Plot landing constraint
-plt.axvline(x=Landing,color='red',linestyle='-.', linewidth=2.5,
+plt.axvline(x=Landing,color='pink',linestyle='-.', linewidth=2.5,
             label='Landing Constraint (W/S to left permissible)')
 
 # Plot ceiling consstraint
