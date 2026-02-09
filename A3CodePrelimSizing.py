@@ -39,6 +39,10 @@ def landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
     return landWingLoading
 
 # Ceiling Constraint
+def Ceiling_Constraint(Cd0Cruise,k):
+    absolute_ceiling = np.ones_like(Wing_Loading) * (2 * np.sqrt(k * Cd0Cruise))
+    return absolute_ceiling
+
 # Insert Ceiling Constraint def Here
 
 # Dash Constraint
@@ -76,7 +80,7 @@ Stall = Stall_Constraint(Clmax, rho, Vstall)
 Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 #Launch = Launch_Constraint()  # Fill in parameters
 Landing = landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
-#Ceiling = Ceiling_Constraint()  # Fill in parameters
+Ceiling = Ceiling_Constraint(Cd0Cruise,k)
 #Dash = Dash_Constraint()  # Fill in parameters
 #Climb = Climb_Constraint()  # Fill in parameters
 
@@ -102,7 +106,8 @@ plt.plot(Wing_Loading, Maneuver, color='green', linewidth=2.5,
 plt.axvline(x=Landing,color='red',linestyle='-.', linewidth=2.5,
             label='Landing Constraint (W/S to left permissible)')
 
-# Add lines here to plot the constraint you added
+# Plot ceiling consstraint
+plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingconstraint')
 
 
 
