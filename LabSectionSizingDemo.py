@@ -49,7 +49,7 @@ def climb_constraint(MTOW,C_D0,CLmax,MLW,airdens,k,vert_speed):
     Climb_TW = Climb_TW*(W_land/W)*(1/0.80) # climb thrust to weight with correction factors
     return Climb_TW
 #========================================================================
-TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.02377,k,200/60)/WS
+TW_climb = WS*climb_constraint(67822,C_D_0,C_L_max,W0,0.02377,k,5000/60)/WS
 TW_turn = q * (C_D_0 / WS + k * (n / q)**2 * WS) #done by Aiden
 
 # ===================== cruise constraint (M=1.6 30,000 ft) =====================

@@ -32,8 +32,11 @@ def Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn
 # Launch Constraint
 # Insert Launch Constraint def Here
 
-# Landing Constraint
-# Insert Landing Constraint def Here
+# Landing Constraint finds wing loading for landing weights lbf,speeds ft/s, density slug/ft^3
+def landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
+    S_land = 2*landWeight/(density*((maxLandSpeed/1.15)**2)*CLmaxLand)
+    landWingLoading = GTOW/S_land
+    return landWingLoading
 
 # Ceiling Constraint
 # Insert Ceiling Constraint def Here
@@ -72,7 +75,7 @@ Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, Takeo
 Stall = Stall_Constraint(Clmax, rho, Vstall)
 Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 #Launch = Launch_Constraint()  # Fill in parameters
-#Landing = Landing_Constraint()  # Fill in parameters
+Landing = landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
 #Ceiling = Ceiling_Constraint()  # Fill in parameters
 #Dash = Dash_Constraint()  # Fill in parameters
 #Climb = Climb_Constraint()  # Fill in parameters
@@ -95,6 +98,9 @@ plt.plot(Wing_Loading, Cruise, color='blue', linewidth=2.5,
 plt.plot(Wing_Loading, Maneuver, color='green', linewidth=2.5, 
          label='Maneuvering Constraint')
 
+# Plot landing constraint
+plt.axvline(x=Landing,color='red',linestyle='-.', linewidth=2.5,
+            label='Landing Constraint (W/S to left permissible)')
 
 # Add lines here to plot the constraint you added
 
@@ -102,7 +108,7 @@ plt.plot(Wing_Loading, Maneuver, color='green', linewidth=2.5,
 
 
 # Formatting
-plt.xlim(0, 50)                # Typical fighter range
+plt.xlim(0, 80)                # Typical fighter range
 plt.ylim(0, 1.2)                # T/W usually 0.8–1.2 for fighters
 plt.xlabel('Wing Loading  W/S  (psf)', fontsize=12)
 plt.ylabel('Thrust-to-Weight Ratio  T/W', fontsize=12)
