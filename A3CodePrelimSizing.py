@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import math
 
 # Create wing loading entries for x axis of plot
-Wing_Loading = np.linspace(0, 100, 500)  # in lb/ft^2
+Wing_Loading = np.linspace(0.5, 100, 500)  # in lb/ft^2
 
 # Stall Constraint (This is a verticle line on the wingloading/thrustloading plot
 def Stall_Constraint(Clmax, rho, Vstall):

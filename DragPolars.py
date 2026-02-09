@@ -101,7 +101,7 @@ plt.title('Drag Polar – Different Configurations', fontsize=13)
 plt.grid(True, alpha=0.3, linestyle='--')
 
 # Reasonable axis limits (adjust if needed)
-plt.xlim(0.0, 0.5)      # most configs should fit here
+plt.xlim(0.0, 0.9)      # most configs should fit here
 plt.ylim(-3, 3)      # allows seeing negative CL if desired
 
 plt.legend(loc='upper left', fontsize=10, framealpha=0.95)
