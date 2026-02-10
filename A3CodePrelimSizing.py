@@ -153,7 +153,7 @@ plt.axvline(x=Maneuver_Instant, color='purple', linestyle='-.', linewidth=2.5,
             label=f'Instant Maneuvering Constraint (W/S ≤ {Maneuver_Instant:.1f})')
 
 # Plot launch constraint (vertical line)
-plt.axvline(x=Launch, color='black', linewidth=2.5, 
+plt.axvline(x=Launch, color='black',linestyle='-.', linewidth=2.5, 
             label=f'Launch Constraint (W/S ≤ {Launch:.1f} psf)')
 
 # Plot landing constraint
@@ -167,7 +167,7 @@ plt.axhline(y=Climb, color='brown', linestyle='-.', linewidth=2.5,
 plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'Ceiling Constraint')
 
 # Plot dash constraint
-plt.plot(Wing_Loading, Dash, color='orange', linewidth=2.5, label='Dash Constraint')
+plt.plot(Wing_Loading, Dash, color='orange', linewidth=1, label='Dash Constraint')
 
 # Formatting
 
