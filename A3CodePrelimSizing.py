@@ -59,13 +59,21 @@ def Ceiling_Constraint(Cd0Cruise,k):
 
 # Dash Constraint
 # Insert Dash Constraint def Here
-
+def Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, k_i, Wing_Loading, ThrustReduction):
+    Vdash = MachDash * aDash             
+    qdash = 0.5 * rhoDash * Vdash**2
+    k_i = 1.0/(np.pi*e*AR)
+    TW_dash_at_alt = (qdash * CD0Dash) / Wing_Loading + (k_i / qdash) * Wing_Loading
+    TW_SLS = TW_dash_at_alt / ThrustReduction
+    return TW_SLS
+    
 # Climb Constraint
 
 def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
     Climb_Intial = ((Ks**2*Climb_Cd0)/(Clmax))+((K*((Clmax)/Ks**2))+((Climb_Gradient)))
     Climb_Constraint = Climb_Intial*((1/.8)*(1/.99)) # Adjusting for fuel fractions and thrust reduction
     return Climb_Constraint
+
 
 
 # PARAMETERS
@@ -95,12 +103,18 @@ Climb_Cd0 = 0.068 # Climb drag coefficient (I just used the openVSP value again)
 e = 0.8 # Oswald efficiency factor (typical value for fighters)
 AR = 2.5 # Aspect ratio (typical value for fighters)
 K = 1/(math.pi*e*AR) # Induced drag factor
+rhoDash = 0.000889 # 30k ft
+aDash   = 994.0
+MachDash = 1.6
+CD0Dash  = Cd0Cruise
+
 
 
 Vend = 135 # Catipult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catipult 
 Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
 Vthrust = 10 # Velocity added by engine thrust during catipult launch (Assumed to be 10 knots per Raymer page 136)
 ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
+
 
 
 # CALCULATIONS
@@ -111,7 +125,7 @@ Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, K, 
 Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
 Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
 Ceiling = Ceiling_Constraint(Cd0Cruise,k)
-#Dash = Dash_Constraint()  # Fill in parameters
+Dash = Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, k_i, Wing_Loading, ThrustReduction):
 # Baseline climb = 45,000 ft/min
 Climb = Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient)
 #Climb = Climb_Constraint()  # Fill in parameters
@@ -152,6 +166,8 @@ plt.axhline(y=Climb, color='purple', linestyle='-.', linewidth=2.5,
 # Plot ceiling consstraint
 plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingconstraint')
 
+# Plot dash constraint
+plt.plot(Wing_Loading, Dash, color='orange', linewidth=2.5, label='Dash Constraint')
 
 
 
