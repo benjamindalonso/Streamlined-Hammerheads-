@@ -82,7 +82,7 @@ def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
 Clmax = 1.5 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
 rho = 0.0023769 # Air density at stall condition in slugs/ft^3
 rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/ft^3 (for launch constraint)
-Vstall = 135 # Airspeed at stall 
+Vstall = 135 # Airspeed at stall in knots  
 rhoCruise = 0.0007382 # Air density at cruise altitude in slugs/ft^3
 Vcruise = 550 # Cruise velocity in knots
 Cd0Cruise = 0.00696 # Zero lift drag coefficient at cruise
@@ -108,14 +108,14 @@ rhoDash = 0.000889 # Density at 30,000 ft in slugs/ft^3
 aDash   = 994.0 # Speed of sound at 30k ft in ft/s
 MachDash = 1.6 # Dash speed in Mach
 CD0Dash  = Cd0Cruise # Assuming zero lift drag coefficient at dash is the same as cruise
-
-
-
 Vend = 135 # Catipult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catipult 
 Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
 Vthrust = 10 # Velocity added by engine thrust during catipult launch (Assumed to be 10 knots per Raymer page 136)
 ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
-
+GTOW = 67822 # Gross takeoff weight from assignment 2
+LandingWeight = 51010 # Landing weight based on assignment 2 fuel fractions 
+maxLandSpeed = 202.6 # Max landing speed in feet per second 
+ClmaxLand = 1.5 # Maximum CL during landing phase 
 
 
 # CALCULATIONS
@@ -123,7 +123,7 @@ Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, K, Wing_Loading, Takeo
 Stall = Stall_Constraint(Clmax, rho, Vstall)
 #Launch = Launch_Constraint()  # Fill in parameters
 Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
-Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
+Landing = Landing_Constraint(GTOW,LandingWeight,maxLandSpeed,ClmaxLand,rhoTropicalDay)
 Ceiling = Ceiling_Constraint(Cd0Cruise, K)
 Dash = Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, K, Wing_Loading, ThrustReduction)
 # Baseline climb = 45,000 ft/min
