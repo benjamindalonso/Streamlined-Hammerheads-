@@ -139,7 +139,7 @@ plt.figure(figsize=(10, 7))
 plt.style.use('ggplot')  # or 'seaborn' / 'default' for cleaner look
 
 # Plot stall constraint (vertical line)
-plt.axvline(x=Stall, color='red', linestyle='--', linewidth=2.5, 
+plt.axvline(x=Stall, color='red',  linewidth=2.5, 
             label=f'Stall Constraint (W/S ≤ {Stall:.1f} psf)')
 
 # Plot cruise constraint 
@@ -153,7 +153,7 @@ plt.axvline(x=Maneuver_Instant, color='purple', linestyle='-.', linewidth=2.5,
             label=f'Instant Maneuvering Constraint (W/S ≤ {Maneuver_Instant:.1f})')
 
 # Plot launch constraint (vertical line)
-plt.axvline(x=Launch, color='white', linewidth=2.5, 
+plt.axvline(x=Launch, color='black', linewidth=2.5, 
             label=f'Launch Constraint (W/S ≤ {Launch:.1f} psf)')
 
 # Plot landing constraint
@@ -164,7 +164,7 @@ plt.axvline(x=Landing,color='red',linestyle='-.', linewidth=2.5,
 plt.axhline(y=Climb, color='brown', linestyle='-.', linewidth=2.5,
             label='Climb Constraint (T/W ≥ {:.2f})'.format(Climb))
 # Plot ceiling consstraint
-plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingconstraint')
+plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'Ceiling Constraint')
 
 # Plot dash constraint
 plt.plot(Wing_Loading, Dash, color='orange', linewidth=2.5, label='Dash Constraint')
@@ -180,6 +180,6 @@ plt.grid(True, linestyle='--', alpha=0.7)
 plt.legend(loc='lower right', fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
+
+plt.fill_between(Wing_Loading,1.2,Dash,where=(Wing_Loading<=Launch),color='lightsteelblue', label='Feasible Region')
 plt.show()
-plt.fill_between(Wing_Loading,Dash,Launch,color="blue")
-plt.fill_between(x, y1, y2, color='skyblue', alpha=0.5, label='Shaded region')
