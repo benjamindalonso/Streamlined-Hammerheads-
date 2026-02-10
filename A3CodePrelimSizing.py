@@ -25,10 +25,9 @@ def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, k, Wing_Loading, rho, Mid
     Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction 
     
     # Required T/W at maneuver alt
-    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (k * (n**2) / q * Wing_LoadingTurn)
+    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (K * (n**2) / q * Wing_LoadingTurn)
     
     # Correct back to Sea Level Static T/W (T0/W0)
-    # (T/W)_turn * (Weight_at_maneuver / W0) * (1 / Thrust_Reduction)
     TW_SLS = TW_turn * (TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction / ThrustReduction)
     return TW_SLS
 
@@ -39,31 +38,32 @@ def Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rho, MidMissionFuel
     return WS_limit
 
 # Launch Constraint
+
 def Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff):
     Launch_Constraint = (0.5) * rhoTropicalDay * ((Vend + Vwod + Vthrust)**2) * (ClmaxTakeOff) / 1.21
     return Launch_Constraint
 
 
 # Landing Constraint finds wing loading for landing weights lbf,speeds ft/s, density slug/ft^3
+
 def Landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
     S_land = 2*landWeight/(density*((maxLandSpeed/1.15)**2)*CLmaxLand)
     landWingLoading = GTOW/S_land
     return landWingLoading
 
 # Ceiling Constraint
-def Ceiling_Constraint(Cd0Cruise,k):
-    absolute_ceiling = np.ones_like(Wing_Loading) * (2 * np.sqrt(k * Cd0Cruise))
+
+def Ceiling_Constraint(Cd0Cruise,K):
+    absolute_ceiling = np.ones_like(Wing_Loading) * (2 * np.sqrt(K * Cd0Cruise))
     return absolute_ceiling
 
-# Insert Ceiling Constraint def Here
-
 # Dash Constraint
-# Insert Dash Constraint def Here
-def Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, k_i, Wing_Loading, ThrustReduction):
+
+def Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, K, Wing_Loading, ThrustReduction):
     Vdash = MachDash * aDash             
     qdash = 0.5 * rhoDash * Vdash**2
-    k_i = 1.0/(np.pi*e*AR)
-    TW_dash_at_alt = (qdash * CD0Dash) / Wing_Loading + (k_i / qdash) * Wing_Loading
+
+    TW_dash_at_alt = (qdash * CD0Dash) / Wing_Loading + (K / qdash) * Wing_Loading
     TW_SLS = TW_dash_at_alt / ThrustReduction
     return TW_SLS
     
@@ -77,6 +77,7 @@ def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
 
 
 # PARAMETERS
+
 # Add additional parameters to the bottom of the list as needed
 Clmax = 1.5 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
 rho = 0.0023769 # Air density at stall condition in slugs/ft^3
@@ -84,7 +85,7 @@ rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/f
 Vstall = 135 # Airspeed at stall 
 rhoCruise = 0.0007382 # Air density at cruise altitude in slugs/ft^3
 Vcruise = 550 # Cruise velocity in knots
-Cd0Cruise = 0.01 # Zero lift drag coefficient at cruise
+Cd0Cruise = 0.0696 # Zero lift drag coefficient at cruise
 Ks = 1.8 # Stall speed factor 
 TakeoffFuelFraction = 0.99 # Fuel fraction from assignment2code
 ClimbFuelFraction = 0.96 # Fuel fraction from assignment2code
@@ -92,21 +93,21 @@ ThrustReduction = 0.8 # Thrust reduction factor at cruise (due to altitude and s
 TurnRate = 0.1745 # in Rad/s based on rfp preference of 10 deg/s
 g = 32.174 # ft/s^2 (gravitational acceleration)
 Vturn = 500 # Velocity during the maneuver in feet per second
-Cd0Turn = 0.01 # Zero lift drag coefficient during the turn (I just used the openVSP value again)
+Cd0Turn = 0.0696 # Zero lift drag coefficient during the turn (I just used the openVSP value again)
 rhoTurn = 0.001267 # Slugs per ft^3 (Density at 20,000 ft - maneuvering altitude per rfp)
 MidMissionFuelFraction = 0.906 # Fuel fraction half way through cruise portion of mission (This is based on the rfp requirements for maneuvering being done at "mid mission weight")
-ROC = 200       # ft/min
-V_horizontal = 500 * 1.68781  # knots to ft/s
-V_horizontal_min = V_horizontal * 60  # ft/min
-Climb_Gradient = ROC / V_horizontal_min
-Climb_Cd0 = 0.068 # Climb drag coefficient (I just used the openVSP value again)
+ROC = 200 # Rate of climb ft/min
+V_horizontal = 500 * 1.68781  # Climb airspeed knots to ft/s
+V_horizontal_min = V_horizontal * 60  # Climb airspeed in ft/min
+Climb_Gradient = ROC / V_horizontal_min # Climb gradient
+Climb_Cd0 = 0.01696 # Climb drag coefficient (I just used the openVSP value again)
 e = 0.8 # Oswald efficiency factor (typical value for fighters)
 AR = 2.5 # Aspect ratio (typical value for fighters)
 K = 1/(math.pi*e*AR) # Induced drag factor
-rhoDash = 0.000889 # 30k ft
-aDash   = 994.0
-MachDash = 1.6
-CD0Dash  = Cd0Cruise
+rhoDash = 0.000889 # Density at 30,000 ft in slugs/ft^3
+aDash   = 994.0 # Speed of sound at 30k ft in ft/s
+MachDash = 1.6 # Dash speed in Mach
+CD0Dash  = Cd0Cruise # Assuming zero lift drag coefficient at dash is the same as cruise
 
 
 
@@ -120,16 +121,15 @@ ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 # CALCULATIONS
 Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, K, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction)
 Stall = Stall_Constraint(Clmax, rho, Vstall)
-Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, K, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 #Launch = Launch_Constraint()  # Fill in parameters
 Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
 Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
-Ceiling = Ceiling_Constraint(Cd0Cruise,k)
-Dash = Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, k_i, Wing_Loading, ThrustReduction):
+Ceiling = Ceiling_Constraint(Cd0Cruise, K)
+Dash = Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, K, Wing_Loading, ThrustReduction)
 # Baseline climb = 45,000 ft/min
 Climb = Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient)
 #Climb = Climb_Constraint()  # Fill in parameters
-Maneuver_Sustained = Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0Turn, k, Wing_Loading, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
+Maneuver_Sustained = Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0Turn, K, Wing_Loading, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 Maneuver_Instant = Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction)
 
 
@@ -153,15 +153,15 @@ plt.axvline(x=Maneuver_Instant, color='purple', linestyle='-.', linewidth=2.5,
             label=f'Instant Maneuvering Constraint (W/S ≤ {Maneuver_Instant:.1f})')
 
 # Plot launch constraint (vertical line)
-plt.axvline(x=Launch, color='yellow', linewidth=2.5, 
+plt.axvline(x=Launch, color='white', linewidth=2.5, 
             label=f'Launch Constraint (W/S ≤ {Launch:.1f} psf)')
 
 # Plot landing constraint
-plt.axvline(x=Landing,color='pink',linestyle='-.', linewidth=2.5,
+plt.axvline(x=Landing,color='beige',linestyle='-.', linewidth=2.5,
             label='Landing Constraint (W/S to left permissible)')
 
 # Plot climb constraint
-plt.axhline(y=Climb, color='purple', linestyle='-.', linewidth=2.5,
+plt.axhline(y=Climb, color='brown', linestyle='-.', linewidth=2.5,
             label='Climb Constraint (T/W ≥ {:.2f})'.format(Climb))
 # Plot ceiling consstraint
 plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingconstraint')
@@ -169,9 +169,8 @@ plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingcons
 # Plot dash constraint
 plt.plot(Wing_Loading, Dash, color='orange', linewidth=2.5, label='Dash Constraint')
 
-
-
 # Formatting
+
 plt.xlim(0, 100)                # Typical fighter range
 plt.ylim(0, 1.2)                # T/W usually 0.8–1.2 for fighters
 plt.xlabel('Wing Loading  W/S  (psf)', fontsize=12)
@@ -182,6 +181,3 @@ plt.legend(loc='upper left', fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
 plt.show()
-
-print(Climb)
-print(Climb_Gradient)
