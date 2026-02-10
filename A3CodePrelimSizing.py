@@ -106,7 +106,7 @@ AR = 2.5 # Aspect ratio (typical value for fighters)
 K = 1/(math.pi*e*AR) # Induced drag factor
 rhoDash = 0.000889 # Density at 30,000 ft in slugs/ft^3
 aDash   = 994.0 # Speed of sound at 30k ft in ft/s
-MachDash = 1.6 # Dash speed in Mach
+MachDash = 2 #Dash speed in Mach
 CD0Dash  = Cd0Cruise # Assuming zero lift drag coefficient at dash is the same as cruise
 Vend = 135 # Catipult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catipult 
 Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
@@ -181,3 +181,5 @@ plt.legend(loc='lower right', fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
 plt.show()
+plt.fill_between(Wing_Loading,Dash,Launch,color="blue")
+plt.fill_between(x, y1, y2, color='skyblue', alpha=0.5, label='Shaded region')
