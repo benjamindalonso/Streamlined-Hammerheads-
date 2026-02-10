@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import math
 
 # Create wing loading entries for x axis of plot
-Wing_Loading = np.linspace(0, 100, 500)  # in lb/ft^2
+Wing_Loading = np.linspace(0.5, 100, 500)  # in lb/ft^2
 
 # Stall Constraint (This is a verticle line on the wingloading/thrustloading plot
 def Stall_Constraint(Clmax, rho, Vstall):
@@ -18,26 +18,43 @@ def Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, TakeoffFue
     Cruise_Constraint = ThrustToWeightCruise * ((TakeoffFuelFraction * ClimbFuelFraction)/(ThrustReduction))
     return Cruise_Constraint
 
+# Maneuvering Constraint (sustained and instant)
+def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, k, Wing_Loading, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction):
+    n = math.sqrt(((TurnRate * Vturn) / g)**2 + 1)
+    q = 0.5 * rho * (Vturn**2)
+    Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction 
+    
+    # Required T/W at maneuver alt
+    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (k * (n**2) / q * Wing_LoadingTurn)
+    
+    # Correct back to Sea Level Static T/W (T0/W0)
+    # (T/W)_turn * (Weight_at_maneuver / W0) * (1 / Thrust_Reduction)
+    TW_SLS = TW_turn * (TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction / ThrustReduction)
+    return TW_SLS
 
-# Maneuvering Constraint
-def Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, k, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction):
-    n = math.sqrt((((TurnRate * Vturn)/g)**2) + 1)
-    q = (0.5 * rhoTurn * (Vturn ** 2))
-    Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction
-    ThrustToWeightTurn = ((q * Cd0Turn) / (Wing_LoadingTurn)) + ((k / q) * Wing_LoadingTurn * (n ** 2))
-    Maneuvering_Constraint = ThrustToWeightTurn * ((TakeoffFuelFraction * ClimbFuelFraction)/(ThrustReduction))
-    return Maneuvering_Constraint
+def Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction):
+    n = math.sqrt(((TurnRate * Vturn) / g)**2 + 1)
+    q = 0.5 * rho * (Vturn**2)
+    WS_limit = (q * Clmax) / (n * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction)
+    return WS_limit
 
 # Launch Constraint
-# Insert Launch Constraint def Here
+def Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff):
+    Launch_Constraint = (0.5) * rhoTropicalDay * ((Vend + Vwod + Vthrust)**2) * (ClmaxTakeOff) / 1.21
+    return Launch_Constraint
+
 
 # Landing Constraint finds wing loading for landing weights lbf,speeds ft/s, density slug/ft^3
-def landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
+def Landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
     S_land = 2*landWeight/(density*((maxLandSpeed/1.15)**2)*CLmaxLand)
     landWingLoading = GTOW/S_land
     return landWingLoading
 
 # Ceiling Constraint
+def Ceiling_Constraint(Cd0Cruise,k):
+    absolute_ceiling = np.ones_like(Wing_Loading) * (2 * np.sqrt(k * Cd0Cruise))
+    return absolute_ceiling
+
 # Insert Ceiling Constraint def Here
 
 # Dash Constraint
@@ -55,6 +72,7 @@ def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
 # Add additional parameters to the bottom of the list as needed
 Clmax = 1.5 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
 rho = 0.0023769 # Air density at stall condition in slugs/ft^3
+rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/ft^3 (for launch constraint)
 Vstall = 135 # Airspeed at stall 
 rhoCruise = 0.0007382 # Air density at cruise altitude in slugs/ft^3
 Vcruise = 550 # Cruise velocity in knots
@@ -79,6 +97,10 @@ AR = 2.5 # Aspect ratio (typical value for fighters)
 K = 1/(math.pi*e*AR) # Induced drag factor
 
 
+Vend = 135 # Catipult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catipult 
+Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
+Vthrust = 10 # Velocity added by engine thrust during catipult launch (Assumed to be 10 knots per Raymer page 136)
+ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 
 
 # CALCULATIONS
@@ -86,11 +108,15 @@ Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, K, Wing_Loading, Takeo
 Stall = Stall_Constraint(Clmax, rho, Vstall)
 Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, K, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 #Launch = Launch_Constraint()  # Fill in parameters
-Landing = landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
-#Ceiling = Ceiling_Constraint()  # Fill in parameters
+Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
+Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
+Ceiling = Ceiling_Constraint(Cd0Cruise,k)
 #Dash = Dash_Constraint()  # Fill in parameters
 # Baseline climb = 45,000 ft/min
 Climb = Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient)
+#Climb = Climb_Constraint()  # Fill in parameters
+Maneuver_Sustained = Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0Turn, k, Wing_Loading, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
+Maneuver_Instant = Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction)
 
 
 
@@ -107,19 +133,30 @@ plt.plot(Wing_Loading, Cruise, color='blue', linewidth=2.5,
          label='Cruise Constraint')
 
 # Plot maneuvering constraint 
-plt.plot(Wing_Loading, Maneuver, color='green', linewidth=2.5, 
-         label='Maneuvering Constraint')
+plt.plot(Wing_Loading, Maneuver_Sustained, color='green', linewidth=2.5, 
+         label='Maneuvering Constraint (sustained)')
+plt.axvline(x=Maneuver_Instant, color='purple', linestyle='-.', linewidth=2.5, 
+            label=f'Instant Maneuvering Constraint (W/S ≤ {Maneuver_Instant:.1f})')
+
+# Plot launch constraint (vertical line)
+plt.axvline(x=Launch, color='yellow', linewidth=2.5, 
+            label=f'Launch Constraint (W/S ≤ {Launch:.1f} psf)')
 
 # Plot landing constraint
-plt.axvline(x=Landing,color='red',linestyle='-.', linewidth=2.5,
+plt.axvline(x=Landing,color='pink',linestyle='-.', linewidth=2.5,
             label='Landing Constraint (W/S to left permissible)')
 
 # Plot climb constraint
 plt.axhline(y=Climb, color='purple', linestyle='-.', linewidth=2.5,
             label='Climb Constraint (T/W ≥ {:.2f})'.format(Climb))
+# Plot ceiling consstraint
+plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingconstraint')
+
+
+
 
 # Formatting
-plt.xlim(0, 80)                # Typical fighter range
+plt.xlim(0, 100)                # Typical fighter range
 plt.ylim(0, 1.2)                # T/W usually 0.8–1.2 for fighters
 plt.xlabel('Wing Loading  W/S  (psf)', fontsize=12)
 plt.ylabel('Thrust-to-Weight Ratio  T/W', fontsize=12)
