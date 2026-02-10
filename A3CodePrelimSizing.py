@@ -177,7 +177,7 @@ plt.xlabel('Wing Loading  W/S  (psf)', fontsize=12)
 plt.ylabel('Thrust-to-Weight Ratio  T/W', fontsize=12)
 plt.title('Preliminary Sizing Constraint Diagram\nNext-Gen Carrier-Based Strike Fighter', fontsize=14, fontweight='bold')
 plt.grid(True, linestyle='--', alpha=0.7)
-plt.legend(loc='upper left', fontsize=11, framealpha=0.9)
+plt.legend(loc='lower right', fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
 plt.show()
