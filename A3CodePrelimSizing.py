@@ -157,7 +157,7 @@ plt.axvline(x=Launch, color='white', linewidth=2.5,
             label=f'Launch Constraint (W/S ≤ {Launch:.1f} psf)')
 
 # Plot landing constraint
-plt.axvline(x=Landing,color='beige',linestyle='-.', linewidth=2.5,
+plt.axvline(x=Landing,color='red',linestyle='-.', linewidth=2.5,
             label='Landing Constraint (W/S to left permissible)')
 
 # Plot climb constraint
