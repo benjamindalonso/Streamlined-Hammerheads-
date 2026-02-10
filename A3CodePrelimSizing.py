@@ -59,8 +59,8 @@ def Ceiling_Constraint(Cd0Cruise,k):
 
 # Dash Constraint
 # Insert Dash Constraint def Here
-def Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, k_i, Wing_Loading, ThrustReduction=1.0):
-    Vdash = MachDash * aDash              # ft/s
+def Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, k_i, Wing_Loading, ThrustReduction):
+    Vdash = MachDash * aDash             
     qdash = 0.5 * rhoDash * Vdash**2
     k_i = 1.0/(np.pi*e*AR)
     TW_dash_at_alt = (qdash * CD0Dash) / Wing_Loading + (k_i / qdash) * Wing_Loading
@@ -73,6 +73,7 @@ def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
     Climb_Intial = ((Ks**2*Climb_Cd0)/(Clmax))+((K*((Clmax)/Ks**2))+((Climb_Gradient)))
     Climb_Constraint = Climb_Intial*((1/.8)*(1/.99)) # Adjusting for fuel fractions and thrust reduction
     return Climb_Constraint
+
 
 
 # PARAMETERS
@@ -115,6 +116,7 @@ Vthrust = 10 # Velocity added by engine thrust during catipult launch (Assumed t
 ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 
 
+
 # CALCULATIONS
 Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, K, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction)
 Stall = Stall_Constraint(Clmax, rho, Vstall)
@@ -123,7 +125,7 @@ Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, K, 
 Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
 Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
 Ceiling = Ceiling_Constraint(Cd0Cruise,k)
-#Dash = Dash_Constraint()  # Fill in parameters
+Dash = Dash_Constraint(rhoDash, MachDash, aDash, CD0Dash, k_i, Wing_Loading, ThrustReduction):
 # Baseline climb = 45,000 ft/min
 Climb = Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient)
 #Climb = Climb_Constraint()  # Fill in parameters
@@ -164,6 +166,8 @@ plt.axhline(y=Climb, color='purple', linestyle='-.', linewidth=2.5,
 # Plot ceiling consstraint
 plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingconstraint')
 
+# Plot dash constraint
+plt.plot(Wing_Loading, Dash, color='orange', linewidth=2.5, label='Dash Constraint')
 
 
 
