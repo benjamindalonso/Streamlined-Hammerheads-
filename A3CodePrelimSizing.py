@@ -1,5 +1,3 @@
-# This script calculates important preliminary sizing parameters and outputs a plot showing a fesable design region
-
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -63,7 +61,11 @@ def Ceiling_Constraint(Cd0Cruise,k):
 # Insert Dash Constraint def Here
 
 # Climb Constraint
-# Insert Climb Constraint def Here
+
+def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
+    Climb_Intial = ((Ks**2*Climb_Cd0)/(Clmax))+((K*((Clmax)/Ks**2))+((Climb_Gradient)))
+    Climb_Constraint = Climb_Intial*((1/.8)*(1/.99)) # Adjusting for fuel fractions and thrust reduction
+    return Climb_Constraint
 
 
 # PARAMETERS
@@ -75,7 +77,7 @@ Vstall = 135 # Airspeed at stall
 rhoCruise = 0.0007382 # Air density at cruise altitude in slugs/ft^3
 Vcruise = 550 # Cruise velocity in knots
 Cd0Cruise = 0.01 # Zero lift drag coefficient at cruise
-k = 1.2 # Stall speed factor 
+Ks = 1.8 # Stall speed factor 
 TakeoffFuelFraction = 0.99 # Fuel fraction from assignment2code
 ClimbFuelFraction = 0.96 # Fuel fraction from assignment2code
 ThrustReduction = 0.8 # Thrust reduction factor at cruise (due to altitude and speed) Get this from engine data
@@ -85,6 +87,16 @@ Vturn = 500 # Velocity during the maneuver in feet per second
 Cd0Turn = 0.01 # Zero lift drag coefficient during the turn (I just used the openVSP value again)
 rhoTurn = 0.001267 # Slugs per ft^3 (Density at 20,000 ft - maneuvering altitude per rfp)
 MidMissionFuelFraction = 0.906 # Fuel fraction half way through cruise portion of mission (This is based on the rfp requirements for maneuvering being done at "mid mission weight")
+ROC = 200       # ft/min
+V_horizontal = 500 * 1.68781  # knots to ft/s
+V_horizontal_min = V_horizontal * 60  # ft/min
+Climb_Gradient = ROC / V_horizontal_min
+Climb_Cd0 = 0.068 # Climb drag coefficient (I just used the openVSP value again)
+e = 0.8 # Oswald efficiency factor (typical value for fighters)
+AR = 2.5 # Aspect ratio (typical value for fighters)
+K = 1/(math.pi*e*AR) # Induced drag factor
+
+
 Vend = 135 # Catipult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catipult 
 Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
 Vthrust = 10 # Velocity added by engine thrust during catipult launch (Assumed to be 10 knots per Raymer page 136)
@@ -92,13 +104,16 @@ ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 
 
 # CALCULATIONS
-Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction)
+Cruise = Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, K, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction)
 Stall = Stall_Constraint(Clmax, rho, Vstall)
+Maneuver = Maneuvering_Constraint(TurnRate, g, Vturn, Cd0Turn, Wing_Loading, K, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 #Launch = Launch_Constraint()  # Fill in parameters
 Launch = Launch_Constraint(rhoTropicalDay, Vend, Vwod, Vthrust, ClmaxTakeOff) 
 Landing = Landing_Constraint(67822,51010,202.6,1.5,23.77*10**(-4))
 Ceiling = Ceiling_Constraint(Cd0Cruise,k)
 #Dash = Dash_Constraint()  # Fill in parameters
+# Baseline climb = 45,000 ft/min
+Climb = Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient)
 #Climb = Climb_Constraint()  # Fill in parameters
 Maneuver_Sustained = Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0Turn, k, Wing_Loading, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 Maneuver_Instant = Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction)
@@ -131,6 +146,9 @@ plt.axvline(x=Launch, color='yellow', linewidth=2.5,
 plt.axvline(x=Landing,color='pink',linestyle='-.', linewidth=2.5,
             label='Landing Constraint (W/S to left permissible)')
 
+# Plot climb constraint
+plt.axhline(y=Climb, color='purple', linestyle='-.', linewidth=2.5,
+            label='Climb Constraint (T/W ≥ {:.2f})'.format(Climb))
 # Plot ceiling consstraint
 plt.plot(Wing_Loading,Ceiling, color='black', linewidth=2.5, label= 'ceilingconstraint')
 
@@ -148,3 +166,6 @@ plt.legend(loc='upper left', fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
 plt.show()
+
+print(Climb)
+print(Climb_Gradient)
