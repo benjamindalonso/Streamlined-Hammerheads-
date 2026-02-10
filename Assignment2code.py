@@ -20,9 +20,9 @@ taxi     = 0.99  # Taxi fuel fraction (Wn/W0)
 
 takeoff  = 0.99  # Takeoff fuel fraction (Wn/W0)
 
-climb    = 0.96  # Climb fuel fraction (Wn/W0)
+climb    = 0.96
 
-combat   = 0.94  # Combat fuel fraction (Wn/W0)
+combat   = 0.94
 
 descent  = 0.99  # Descent fuel fraction (Wn/W0)
 
@@ -35,10 +35,10 @@ goaround = 0.99  # Go Around fuel fraction (Wn/W0) (This would be if landing is 
 
 import numpy as np
 
-Cl_Cd = 11    # Lift-to-Drag Ratio during cruise and loiter
-R = 2000            # Range in nmi
-ct = 0.8            # Thrust specific fuel consumtion in nmi/hr
-V = 550             # Velocity in nmi/hr
+Cl_Cd = 14   # Lift-to-Drag Ratio during cruise and loiter (14 for design B, 9 for A)
+R = 2000            # Range in nmi 
+ct = 0.8            # Thrust specific fuel consumtion in nmi/hr (0.8 for design B, 1 for A)
+V = 550             # Cruise Velocity in nmi/hr (550 for design B, 1000 for A)
 E = .333            # Time Spent Loitering in hours
 
 cruise = np.exp((-R*ct) / (V*Cl_Cd))  # Cruise fuel fraction (Wn/W0)
@@ -56,7 +56,7 @@ F = 1.06 * F_used           # Total fuel fraction with reserves
 
 # Initial Weight Guess and Convergence Loop
 
-Wo = 100000                 # Initial guess for Takeoff Gross Weight in lbs
+Wo = 100000             # Initial guess for Takeoff Gross Weight in lbs
 Wo_history = []             # To store Wo values for convergence plot
 previous_Wo = 0             # To track previous Wo for convergence check
 err = 1e-6  
@@ -87,11 +87,11 @@ empty_weight_fraction_percent = empty_weight_fraction * 100  # Empty weight frac
 # Plot Convergence
 import matplotlib.pyplot as plt
 # Plot convergence
-plt.figure(figsize=(10, 6))
-plt.title("Takeoff Weight Estimate Convergence")
+plt.figure(figsize=(8, 4))
+plt.title("Weight Estimate Convergence")
 plt.xlabel("Iteration")
-plt.ylabel("W0 (lbs)")
-plt.plot(Wo_history, label="W0", linewidth=2)
+plt.ylabel("W₀ (kg)")
+plt.plot(Wo_history, label="W₀", linewidth=2)
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
@@ -99,6 +99,7 @@ plt.show()
 
 
 # Weight Estimates Output
+print("Lift to Drag Ratio (Cl/Cd): " + str(Cl_Cd))
 print(f"\n--- Weight Estimates ---") # Print Weight Estimates Header
 print("Gross Takeoff Weight: " + str(round(Wo)) + " lbs")
 print(f"Empty Weight: {We:.2f} lbs") # Print Empty Weight
@@ -108,14 +109,13 @@ print(f"Landing Weight: {W_landing:.2f} lbs") # Print Landing Weight
 print(f"Total Fuel Weight: {Wfuel_total:.2f} lbs") # Print Total Fuel Weight
 print(f"Used Fuel Weight: {Wfuel_used:.2f} lbs") # Print Used Fuel Weight
 print(f"Reserve Fuel Weight: {Wfuel_reserved:.2f} lbs") # Print Reserve Fuel Weight
-print("Crew Weight: " + str(round(Wcrew)) + " lbs") # Print Crew Weight
-print("Payload Weight: " + str(round(Wpayload)) + " lbs") # Print Payload Weight
-print("Warm up Fuel Fraction (Wn/W0): " + str(round(warmup, 3))) # Print Warm up Fuel Fraction
-print("Taxi Fuel Fraction (Wn/W0): " + str(round(taxi, 3))) # Print Taxi Fuel Fraction
-print("Takeoff Fuel Fraction (Wn/W0): " + str(round(takeoff, 3))) # Print Takeoff Fuel Fraction
-print("Climb Fuel Fraction (Wn/W0): " + str(round(climb, 3))) # Print Climb Fuel Fraction
-print("Cruise Fuel Fraction (Wn/W0): " + str(round(cruise, 3))) # Print Cruise Fuel Fraction
-print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3))) # Print Combat Fuel Fraction
-print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3))) # Print Loiter Fuel Fraction
-print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3))) # Print Go Around Fuel Fraction
-print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3))) # Print Landing Fuel Fraction
+print("Crew Weight: " + str(round(Wcrew)) + " lbs")
+print("Payload Weight: " + str(round(Wpayload)) + " lbs")
+print("Warm up Fuel Fraction (Wn/W0): " + str(round(warmup, 3)))
+print("Taxi Fuel Fraction (Wn/W0): " + str(round(taxi, 3)))
+print("Takeoff Fuel Fraction (Wn/W0): " + str(round(takeoff, 3)))
+print("Cruise Fuel Fraction (Wn/W0): " + str(round(cruise, 3)))
+print("Combat Fuel Fraction (Wn/W0): " + str(round(combat, 3)))
+print("Loiter Fuel Fraction (Wn/W0): " + str(round(loiter, 3)))
+print("Go Around Fuel Fraction (Wn/W0): " + str(round(goaround, 3)))
+print("Landing Fuel Fraction (Wn/W0): " + str(round(landing, 3)))
