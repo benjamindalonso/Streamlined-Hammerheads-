@@ -25,7 +25,7 @@ def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, k, Wing_Loading, rho, Mid
     Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction 
     
     # Required T/W at maneuver alt
-    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (K * (n**2) / q * Wing_LoadingTurn)
+    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (K * (n**2) * Wing_LoadingTurn / q )
     
     # Correct back to Sea Level Static T/W (T0/W0)
     TW_SLS = TW_turn * (TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction / ThrustReduction)
