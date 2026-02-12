@@ -1,4 +1,4 @@
-# This script calculates the launch constraint on a T vs S plot
+# This script calculates the Maneuver constraint on a T vs S plot (Ben did this, I had to do a constraint that depended on thrust to get credit for the lab assignment)
 
 import numpy as np
 import matplotlib.pyplot as plt
