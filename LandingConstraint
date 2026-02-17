@@ -1,0 +1,72 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+
+# Prescribe S Grid
+S_grid = np.linspace(200,2000,40) # ft^2
+W_payload = 6802
+W_crew = 400
+emptyFraction = 0.63
+fuelFraction = 0.36
+Cd0 = 0.01696
+e = 0.8
+AR = 2.5
+k = 1/(math.pi*e*AR)
+TW = 0.7
+
+def weightInnerLoop(S,horzS,vertS,fuseA,Range,c,Vel,LtoD,T0,W_int,tolerance):
+    W = W_int
+    delta = 2*tolerance
+    iterations = 1
+    while delta > tolerance:
+        iterations+=1
+        emptyWFrac = 2.34*W**(-0.13)
+        emptyW = emptyWFrac*W
+        emptyW = emptyW + 9*S + 4*horzS + 5.3*vertS + 4.8*fuseA
+        cruiseFF = math.exp((-Range*c)/(Vel*LtoD))
+        fuelFrac = 1-cruiseFF*0.990*0.990*0.9900*0.990*0.992
+        fuelW = fuelFrac*W
+        Wnew = fuelW + emptyW + W_crew + W_payload
+        delta = abs(Wnew - W)/abs(W)
+        W = Wnew
+        if iterations > 300:
+            return print("failed to converge")
+    return (Wnew,emptyW,fuelW)
+
+def Landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
+    S_land = 2*landWeight/(density*((maxLandSpeed/1.15)**2)*CLmaxLand)
+    #landWingLoading = GTOW/S_land
+    return S_land #landWingLoading
+
+def Landing_Constraint2(S,maxLandSpeed,CLmaxLand,density):
+    W_land = (1/2)*S*density*CLmaxLand*(maxLandSpeed/1.15)**2
+    W = (W_land - W_payload - W_crew)/(emptyFraction + 0.25*fuelFraction)
+    return W
+
+def Landing_Constraint3(S,maxLandSpeed,CLmaxLand,density):
+    C_D = Cd0 + k*(CLmaxLand**2)
+    D = 0.5*density*(maxLandSpeed**2)*S*C_D
+    return D
+
+Weights = []
+#emptyWeights = []
+#fuelWeights = []
+thrust = []
+
+for S in S_grid:
+    W, emptyW, fuelW = weightInnerLoop(S,2*61.05,2*65.2,219,2000,0.9,500,12,1,65000,10**(-3))
+    T = Landing_Constraint3(S,202.6,1.5,0.00219)
+    thrust = np.append(thrust,T)
+    Weights = np.append(Weights,W)
+    #emptyWeights = np.append(emptyWeights,emptyW)
+    #fuelWeights = np.append(fuelWeights,fuelW)
+
+
+plt.figure(figsize=(10, 7))
+plt.style.use('ggplot')
+plt.xlabel("Wing Area (ft^2)")
+plt.ylabel("Total Thrust (lbf)")
+plt.title("T-S Plot for Carrier Based Fighter")
+plt.plot(S_grid,thrust,label="Landing Constraint")
+plt.legend(loc='best')
+plt.show()
