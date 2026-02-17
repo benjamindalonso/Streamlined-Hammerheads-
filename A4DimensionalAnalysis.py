@@ -166,7 +166,7 @@ tconv, W0conv, iters, T_hist_allS, *_ = outer_loop_thrust_for_climb_constraint(
 plt.figure()
 plt.plot(S_grid, tconv, marker='o')
 plt.xlabel("Wing Area S (ft²)")
-plt.ylabel("Required Total Thrust (lb)")
+plt.ylabel("Total Thrust (lb)")
 plt.title("Climb Constraint: Thrust vs Wing Area")
 plt.grid(True)
 plt.show()
