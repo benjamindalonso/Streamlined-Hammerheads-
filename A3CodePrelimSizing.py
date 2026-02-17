@@ -131,7 +131,7 @@ Climb = Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient)
 #Climb = Climb_Constraint()  # Fill in parameters
 Maneuver_Sustained = Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0Turn, K, Wing_Loading, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction)
 Maneuver_Instant = Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rhoTurn, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction)
-
+#Vthrust is
 
 
 # PLOTTING
@@ -181,3 +181,4 @@ plt.legend(loc='upper left', fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
 plt.show()
+

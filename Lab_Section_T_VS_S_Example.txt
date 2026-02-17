@@ -1,0 +1,180 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+
+
+S_ht = 100
+S_vt = 81
+S_wet_fuselage = 180
+num_engines = 1
+AR = 2.5
+
+Wcrew = 400
+Wpayload = 6802
+
+L_D_max = 14
+R = 2000          # nmi
+c = 0.8           # 1/hr
+V = 550           # nmi/hr
+E = 0.333         # hr loiter
+
+
+Clmax = 1.5
+ROC = 200                 # ft/min
+V_horizontal = 500 * 1.68781   # knots -> ft/s
+V_horizontal_min = V_horizontal * 60
+Climb_Gradient = ROC / V_horizontal_min
+
+Climb_Cd0 = 0.01696
+e = 0.8
+Ks = 1.8
+K = 1 / (math.pi * e * AR)
+
+
+def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
+    TW = ((Ks**2 * Climb_Cd0) / Clmax) \
+       + (K * (Clmax / Ks**2)) \
+       + Climb_Gradient
+
+    TW = TW * (1/0.8) * (1/0.99)
+    return TW
+
+TW_climb = Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient)
+print("Climb T/W =", TW_climb)
+
+
+def calc_e_w(T0):
+    Wdry = .521 * T0**.9
+    woil = .082 * T0**.65
+    wrev = .034 * T0
+    wcontrol = .26 * T0**.5
+    wstart = 9.33 * (Wdry/1000)**1.078
+    return Wdry + woil + wrev + wcontrol + wstart
+
+def calc_empty_w(S_wing, S_ht, S_vt, S_wet_fuselage, TOGW, T0, num_engines):
+    Wwing = S_wing * 9
+    wht = S_ht * 4
+    wvt = S_vt * 5.3
+    wfus = S_wet_fuselage * 4.8
+    Wlg = .033 * TOGW
+    Engw = calc_e_w(T0)
+    Wengines = Engw * num_engines * 1.3
+    Wall = .17 * TOGW
+    return Wwing + wht + wvt + wfus + Wlg + Wengines + Wall
+
+def calc_wf(L_D_max, R, E, c, V):
+    Ld = .94 * L_D_max
+    cruise = np.exp((-R * c) / (V * Ld))
+    loiter = np.exp((-E * c) / (Ld))
+    FinalFuel = cruise * loiter * 0.99 * 0.99 * 0.99 * 0.96 * 0.94 * 0.99 * 0.995 * 0.99
+    return (1 - FinalFuel) * 1.06
+
+
+def innerloopweight(TOGW_guess, S_wing, S_ht, S_vt,
+                    S_wet_fuselage, num_engines,
+                    Wcrew, Wpayload, T0,
+                    err=1e-6, max_iter=200):
+
+    W0_history = []
+    delta = np.inf
+    it = 0
+
+    while delta > err and it < max_iter:
+        TotalFuel = calc_wf(L_D_max, R, E, c, V)
+        W_fuel = TotalFuel * TOGW_guess
+        Wempt = calc_empty_w(S_wing, S_ht, S_vt,
+                             S_wet_fuselage, TOGW_guess,
+                             T0, num_engines)
+
+        W0_new = Wempt + Wcrew + Wpayload + W_fuel
+        W0_history.append(W0_new)
+
+        delta = abs(W0_new - TOGW_guess) / W0_new
+        TOGW_guess = W0_new
+        it += 1
+
+    return TOGW_guess, np.array(W0_history)
+
+
+def outer_loop_thrust_for_climb_constraint(
+    S_grid, TOGW_guess_init, T_total_guess_init,
+    num_engines, S_ht, S_vt, S_wet_fuselage,
+    Wcrew, Wpayload, TW_climb,
+    tol=1e-3, max_iter=100):
+
+    T_conv = []
+    W0_conv = []
+    W0_hist_example = None   
+
+    for i, S_wing in enumerate(S_grid):
+        T_total = T_total_guess_init
+
+        for k in range(max_iter):
+            T0 = T_total / num_engines
+            W0, W0_hist = innerloopweight(
+                TOGW_guess_init, S_wing,
+                S_ht, S_vt, S_wet_fuselage,
+                num_engines, Wcrew, Wpayload, T0)
+
+            T_req = TW_climb * W0
+
+            if abs(T_req - T_total)/T_total < tol:
+                break
+
+            T_total = T_req
+
+        if i == 0:   
+            W0_hist_example = W0_hist
+
+        T_conv.append(T_total)
+        W0_conv.append(W0)
+
+    return np.array(T_conv), np.array(W0_conv), W0_hist_example
+
+
+S_grid = np.linspace(300, 700, 9)
+
+tconv, W0conv, W0_hist = outer_loop_thrust_for_climb_constraint(
+    S_grid,
+    TOGW_guess_init=60000,
+    T_total_guess_init=30000,
+    num_engines=num_engines,
+    S_ht=S_ht,
+    S_vt=S_vt,
+    S_wet_fuselage=S_wet_fuselage,
+    Wcrew=Wcrew,
+    Wpayload=Wpayload,
+    TW_climb=TW_climb
+)
+
+TOGW_guess_grid = np.linspace(40000, 40000, 1)
+
+for guess in TOGW_guess_grid:
+    W0, hist = innerloopweight(
+        TOGW_guess=guess,
+        S_wing=500,
+        S_ht=S_ht,
+        S_vt=S_vt,
+        S_wet_fuselage=S_wet_fuselage,
+        num_engines=num_engines,
+        Wcrew=Wcrew,
+        Wpayload=Wpayload,
+        T0=15000
+    )
+
+    plt.plot(hist, label=f"start {int(guess)} lb")
+
+plt.xlabel("Iteration")
+plt.ylabel("EstimatedTOGW (lb)")
+plt.title("Convergence of TOGW Estimate")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+plt.figure()
+plt.plot(S_grid, tconv, marker='o')
+plt.xlabel("Wing Area S (ft²)")
+plt.ylabel("Total Thrust (lbf)")
+plt.title("Converged Climb Constraint: Thrust vs Wing Area")
+plt.grid(True)
+plt.show()
