@@ -193,17 +193,37 @@ def outer_loop_climb_constraint(
             if not converged_inner:
                 print(" [inner loop did not converge]")
                 break
+            
+            WS = W0 / S_wing
+            
+        
+            climb_initial = (Ks**2 * Climb_Cd0 / Clmax) + \
+                            (K * (Clmax / Ks**2)) + \
+                            Climb_Gradient
+            TW_req = climb_initial * (1 / 0.8) * (1 / 0.99)
+            
+            T_req = TW_req * W0
+            
+            rel_error = abs(T_req - T_total) / max(abs(T_total), 1e-6)
+            if rel_error < tol_T_rel:
+                T_converged.append(T_req)
+                W0_converged.append(W0)
+                break
+            
+            T_total = (1 - relax) * T_total + relax * T_req
+        
+        else:
+            T_converged.append(T_req)
+            W0_converged.append(W0)
+    
+    return np.array(T_converged), np.array(W0_converged)
 
-            T_total = (1-relax)*T_total +relax*T_req
+# Runs climb constraint
+T_climb, W0_climb = outer_loop_climb_constraint()
 
-        T_total_converged.append(T_total)
-        W0_converged.append(W_0)
-        iter_counts.append(k+1)
-        T_total_history_allS.append(T_hist)
 
-    return (np.array(T_total_converged), np.array(W0_converged), np.array(iter_counts), T_total_history_allS, W_0, wconv, it_w, W0_hist)
-
-def landing_constraint_wing_area(T_grid,TOGW_guss_init,maxLandSpeed,CLmaxLand,density):
+# Landing Loop
+def outer_loop_landing_constraint(T_grid,TOGW_Guess_init,maxLandSpeed,CLmaxLand,density):
     tolerance = 10**(-6)
     S_converged = []
     for T in T_grid:
@@ -223,34 +243,77 @@ def landing_constraint_wing_area(T_grid,TOGW_guss_init,maxLandSpeed,CLmaxLand,de
 S_grid = np.linspace(300, 600, 7)
 T_grid = np.linspace(0,70000,10)
 
-tconv, W0conv, iters, T_hist_allS, *_ = outer_loop_thrust_for_climb_constraint(
-    S_grid=S_grid,
-    TOGW_guss_init=40000,
-    T_total_guess_init=20000,
-    num_engines=2,
-    S_ht=S_ht,
-    S_vt=S_vt,
-    S_wet_fuselage=S_wet_fuselage,
-    Wcrew=Wcrew,
-    Wpayload=Wpayload,
-    coef_1_climb_constraint=0.03,
-    coef_2_climb_constraint=0.0004
-)
+# Runs landing constraint
+S_converged_landing = outer_loop_landing_constraint(T_grid, TOGW_Guess, maxLandSpeed, Clmax, rhoTropicalDay)
 
-S_convereged_landing_constraint = landing_constraint_wing_area(T_grid,40000,maxLandSpeed,Clmax,rhoTropicalDay)
 
-plt.figure()
-plt.plot(S_grid, tconv, marker='o')
-plt.xlabel("Wing Area S (ft²)")
-plt.ylabel("Total Thrust (lb)")
-plt.title("Climb Constraint: Thrust vs Wing Area")
-plt.grid(True)
+# Launch loop
+T_levels = np.linspace(15000, 45000, 7)   # all the thrust values this loop will test
+S_min_launch = []
+for T in T_levels:
+    T0 = T / NumberOfEngines
+    W0, _, _, _ = Weight_Inner_Loop(
+        TOGW_Guess    = TOGW_Guess,
+        WingArea      = WingArea,
+        HorizTailArea = HorizTailArea,
+        VertTailArea  = VertTailArea,
+        WetAreaFuse   = WetAreaFuse,
+        NumberOfEngines = NumberOfEngines,
+        WeightCrew    = WeightCrew,
+        WeightPayload = WeightPayload,
+        T_0           = T0
+    )
+    
+    WS_max = 0.5 * rhoTropicalDay * ((Vend + Vwod + Vthrust)**2) * ClmaxTakeOff / 1.21
+    S_min = W0 / WS_max
+    S_min_launch.append(S_min)
+
+
+
+
+# =============================================================================
+#   FINAL CONSTRAINT DIAGRAM + SUMMARY OUTPUT
+# ============================================================================
+
+# ─── Print converged takeoff gross weight from initial estimation ───────────
+print("\n" + "="*60)
+print("INITIAL WEIGHT ESTIMATION (fixed wing area = {} ft²)".format(WingArea))
+print("Converged Takeoff Gross Weight (W₀): {:.0f} lbf".format(W0))
+print("  - Empty weight:       {:.0f} lbf".format(
+    Empty_Weight_Calculation(WingArea, HorizTailArea, VertTailArea, WetAreaFuse, W0, T_0, NumberOfEngines)
+))
+print("  - Crew + Payload:     {:.0f} lbf".format(WeightCrew + WeightPayload))
+print("  - Fuel weight:        {:.0f} lbf".format(W0 - (WeightCrew + WeightPayload + 
+      Empty_Weight_Calculation(WingArea, HorizTailArea, VertTailArea, WetAreaFuse, W0, T_0, NumberOfEngines))))
+print("  - Iterations to converge: {}".format(it))
+print("="*60 + "\n")
+
+# ─── Combined Constraint Diagram ────────────────────────────────────────────
+plt.figure(figsize=(11, 7))
+
+# Climb constraint: Thrust required vs Wing Area
+plt.plot(WingAreaGrid, T_climb,
+         marker='o', linestyle='-', linewidth=1.8, markersize=7,
+         color='C0', label='Climb constraint (ROC + lapse adjustment)')
+
+# Landing constraint: Thrust vs Required Wing Area (minimum S for given T)
+plt.plot(S_converged_landing, T_grid,
+         marker='s', linestyle='--', linewidth=1.8, markersize=7,
+         color='C3', label='Landing constraint (max landing speed = {} ft/s)'.format(maxLandSpeed))
+
+# Launch constraint: Thrust required vs wing area
+plt.plot(S_min_launch, T_levels,
+         marker='D', linestyle=':', linewidth=1.6, markersize=8,
+         color='C4', label='Launch / Takeoff\n(min S to meet WS limit)')
+
+# ADD NEW PLOTTING HERE FOLLOWING PREVIOUS FORMAT
+
+# Formatting 
+plt.xlabel("Wing Area S  (ft²)", fontsize=12)
+plt.ylabel("Total Thrust Required  (lbf)", fontsize=12)
+plt.title("Aircraft Sizing Constraint Diagram\n", fontsize=14, fontweight='bold')
+plt.grid(True, linestyle='--', alpha=0.7)
+plt.legend(fontsize=11, loc='upper right', framealpha=0.95, edgecolor='gray')
+plt.tight_layout()
 plt.show()
 
-plt.figure()
-plt.plot(S_convereged_landing_constraint,T_grid)
-plt.xlabel("Wing Area S (ft²)")
-plt.ylabel("Total Thrust (lb)")
-plt.title("Landing Constraint: Thrust vs Wing Area")
-plt.grid(True)
-plt.show()
