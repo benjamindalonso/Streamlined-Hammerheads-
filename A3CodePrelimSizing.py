@@ -180,11 +180,7 @@ plt.grid(True, linestyle='--', alpha=0.7)
 plt.legend(loc='lower right', fontsize=11, framealpha=0.9)
 
 plt.tight_layout()
-<<<<<<< HEAD
 plt.show()
-
-=======
 
 plt.fill_between(Wing_Loading,1.2,Dash,where=(Wing_Loading<=Launch),color='lightsteelblue', label='Feasible Region')
 plt.show()
->>>>>>> 37ec6221dc0e33d8454ad47c3c329c44185760a6
