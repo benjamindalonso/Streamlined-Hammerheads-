@@ -108,9 +108,18 @@ def Landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
     return landWingLoading
 
 
-
-
-
+# Maneuvering Constraint (from A3)
+def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, K, Wing_Loading, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction):
+    n = math.sqrt(((TurnRate * Vturn) / g)**2 + 1)
+    q = 0.5 * rho * (Vturn**2)
+    Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction 
+    
+    # Required T/W at maneuver alt
+    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (K * (n**2) * Wing_LoadingTurn / q)
+    
+    # Correct back to Sea Level Static T/W (T0/W0)
+    TW_SLS = TW_turn * (TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction / ThrustReduction)
+    return TW_SLS
 
 
 #---------------------------------------------------------------------------
@@ -268,7 +277,74 @@ for T in T_levels:
     S_min = W0 / WS_max
     S_min_launch.append(S_min)
 
+# Maneuver loop
+def outer_loop_maneuver_constraint(
+        WingAreaGrid,
+        TOGW_Guess,
+        TotalThrustInitialGuess,
+        tol_T_rel=1e-3,
+        max_iter_T=100,
+        relax=1.0):
 
+    T_total_converged = []
+    W0_converged = []
+
+    for WingArea in WingAreaGrid:
+
+        T_total = TotalThrustInitialGuess
+
+        for k in range(max_iter_T):
+
+            # Thrust per engine
+            T_0 = T_total / NumberOfEngines
+
+            # Inner weight loop
+            Final_TOGW, Converged, Iterations, _ = Weight_Inner_Loop(
+                TOGW_Guess,
+                WingArea,
+                HorizTailArea,
+                VertTailArea,
+                WetAreaFuse,
+                NumberOfEngines,
+                WeightCrew,
+                WeightPayload,
+                T_0
+            )
+            WingLoading = Final_TOGW / WingArea
+            # Maneuver T/W requirement
+            TW_maneuver = Sustained_Turn_Constraint(
+                TurnRate,
+                g,
+                Vturn,
+                Cd0Turn,
+                K,
+                WingLoading,
+                rhoTurn,
+                MidMissionFuelFraction,
+                TakeoffFuelFraction,
+                ClimbFuelFraction,
+                ThrustReduction
+            )
+            T_required = TW_maneuver * Final_TOGW
+            # Checking the convergence
+            rel_error = abs(T_required - T_total) / max(abs(T_total), 1e-9)
+
+            if rel_error < tol_T_rel:
+                T_total = T_required
+                break
+            # Relaxation update
+            T_total = (1 - relax) * T_total + relax * T_required
+
+        T_total_converged.append(T_total)
+        W0_converged.append(Final_TOGW)
+
+    return np.array(T_total_converged), np.array(W0_converged)
+
+T_maneuver, W0_curve = outer_loop_maneuver_constraint(
+    WingAreaGrid,
+    TOGW_Guess,
+    TotalThrustInitialGuess
+)
 
 
 # =============================================================================
@@ -306,6 +382,9 @@ plt.plot(S_min_launch, T_levels,
          marker='D', linestyle=':', linewidth=1.6, markersize=8,
          color='C4', label='Launch / Takeoff\n(min S to meet WS limit)')
 
+plt.plot(WingAreaGrid, T_maneuver,
+         marker='^', linestyle='-.', linewidth=1.8, markersize=7,
+         color='C2', label='Sustained Turn Constraint\n(10 deg/s at 20k ft)')
 # ADD NEW PLOTTING HERE FOLLOWING PREVIOUS FORMAT
 
 # Formatting 
