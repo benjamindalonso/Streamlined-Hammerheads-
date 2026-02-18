@@ -254,7 +254,6 @@ plt.title("Climb Constraint: Thrust vs Wing Area")
 plt.grid(True)
 plt.show()
 
-# ---- CRUISE constraint T vs S ----
 tconv_cruise, W0conv_cruise, iters_cruise, Thist_cruise = outer_loop_thrust_for_cruise_constraint(
     S_grid=S_grid,
     TOGW_guss_init=40000,
@@ -281,21 +280,6 @@ plt.ylabel("Total Thrust (lb)")
 plt.title("Cruise Constraint: Thrust vs Wing Area")
 plt.grid(True)
 plt.show()
-
-print("Cruise worst outer iters:", iters_cruise.max())
-print("Cruise mean outer iters :", iters_cruise.mean())
-
-
-plt.figure()
-plt.plot(S_grid, tconv_cruise, marker='o')
-plt.xlabel("Wing Area S (ft²)")
-plt.ylabel("Total Thrust (lb)")
-plt.title("Cruise Constraint: Thrust vs Wing Area")
-plt.grid(True)
-plt.show()
-
-print("Cruise worst outer iters:", iters_cruise.max())
-print("Cruise mean outer iters :", iters_cruise.mean())
 
 plt.figure()
 plt.plot(S_convereged_landing_constraint,T_grid)
