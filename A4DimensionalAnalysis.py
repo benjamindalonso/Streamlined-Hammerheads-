@@ -155,6 +155,61 @@ def outer_loop_thrust_for_climb_constraint(S_grid, TOGW_guss_init, T_total_guess
 
     return (np.array(T_total_converged), np.array(W0_converged), np.array(iter_counts), T_total_history_allS, W_0, wconv, it_w, W0_hist)
 
+
+V_fts = V * 6076.12 / 3600.0     
+rho_cruise = 0.0009              
+q_cruise = 0.5 * rho_cruise * V_fts**2
+CD0_cruise = 0.00696             
+
+def cruise_constraint_TW_req(WS, q_cruise, CD0_cruise, AR, e):
+    k = 1.0 / (math.pi * e * AR)
+    return (q_cruise * CD0_cruise) / WS + (k * WS) / q_cruise
+
+
+def outer_loop_thrust_for_cruise_constraint(
+    S_grid, TOGW_guss_init, T_total_guess_init,
+    num_engines, S_ht, S_vt, S_wet_fuselage,
+    Wcrew, Wpayload,
+    q_cruise, CD0_cruise, AR, e,
+    tol_T_rel=1e-3, max_iter_T=100, relax=1.0
+):
+    T_total_converged, W0_converged, iter_counts, T_total_history_allS = [], [], [], []
+
+    for S_wing in S_grid:
+        T_total = T_total_guess_init
+        T_hist = []
+
+        for k_it in range(max_iter_T):
+            T0 = T_total / num_engines
+
+            W_0, wconv, it_w, W0_hist = innerloopweight(
+                TOGW_guss_init, S_wing, S_ht, S_vt, S_wet_fuselage,
+                num_engines, Wcrew, Wpayload, T0
+            )
+
+            WS = W_0 / S_wing
+            TW_req = cruise_constraint_TW_req(WS, q_cruise, CD0_cruise, AR, e)
+            T_req = TW_req * W_0
+
+            T_hist.append(T_total)
+
+            if abs(T_req - T_total) / max(abs(T_total), 1e-9) < tol_T_rel:
+                T_total = T_req
+                break
+
+            T_total = (1 - relax) * T_total + relax * T_req
+
+        T_total_converged.append(T_total)
+        W0_converged.append(W_0)
+        iter_counts.append(k_it + 1)
+        T_total_history_allS.append(T_hist)
+
+    return (np.array(T_total_converged),
+            np.array(W0_converged),
+            np.array(iter_counts),
+            T_total_history_allS)
+
+
 def landing_constraint_wing_area(T_grid,TOGW_guss_init,maxLandSpeed,CLmaxLand,density):
     tolerance = 10**(-6)
     S_converged = []
@@ -198,6 +253,49 @@ plt.ylabel("Total Thrust (lb)")
 plt.title("Climb Constraint: Thrust vs Wing Area")
 plt.grid(True)
 plt.show()
+
+# ---- CRUISE constraint T vs S ----
+tconv_cruise, W0conv_cruise, iters_cruise, Thist_cruise = outer_loop_thrust_for_cruise_constraint(
+    S_grid=S_grid,
+    TOGW_guss_init=40000,
+    T_total_guess_init=20000,
+    num_engines=2,
+    S_ht=S_ht,
+    S_vt=S_vt,
+    S_wet_fuselage=S_wet_fuselage,
+    Wcrew=Wcrew,
+    Wpayload=Wpayload,
+    q_cruise=q_cruise,
+    CD0_cruise=CD0_cruise,
+    AR=AR,
+    e=e,
+    tol_T_rel=1e-3,
+    max_iter_T=100,
+    relax=1.0
+)
+
+plt.figure()
+plt.plot(S_grid, tconv_cruise, marker='o')
+plt.xlabel("Wing Area S (ft²)")
+plt.ylabel("Total Thrust (lb)")
+plt.title("Cruise Constraint: Thrust vs Wing Area")
+plt.grid(True)
+plt.show()
+
+print("Cruise worst outer iters:", iters_cruise.max())
+print("Cruise mean outer iters :", iters_cruise.mean())
+
+
+plt.figure()
+plt.plot(S_grid, tconv_cruise, marker='o')
+plt.xlabel("Wing Area S (ft²)")
+plt.ylabel("Total Thrust (lb)")
+plt.title("Cruise Constraint: Thrust vs Wing Area")
+plt.grid(True)
+plt.show()
+
+print("Cruise worst outer iters:", iters_cruise.max())
+print("Cruise mean outer iters :", iters_cruise.mean())
 
 plt.figure()
 plt.plot(S_convereged_landing_constraint,T_grid)
