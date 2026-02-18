@@ -156,26 +156,24 @@ def outer_loop_thrust_for_climb_constraint(S_grid, TOGW_guss_init, T_total_guess
     return (np.array(T_total_converged), np.array(W0_converged), np.array(iter_counts), T_total_history_allS, W_0, wconv, it_w, W0_hist)
 
 def landing_constraint_wing_area(T_grid,TOGW_guss_init,maxLandSpeed,CLmaxLand,density):
-    tolerance = 10**(-3)
-    delta = 2*tolerance
+    tolerance = 10**(-6)
     S_converged = []
     for T in T_grid:
-        T0 = T
-        S_wing = 100
+        S_wing = 1
+        delta = 2*tolerance
         while delta > tolerance:
-             W_0, wconv, it_w, W0_hist = innerloopweight(TOGW_guss_init, S_wing, S_ht, S_vt, S_wet_fuselage, num_engines, Wcrew, Wpayload, T0)
-             landWeight = W_0 - 0.75*calc_wf(L_D_max,R,E,c,V)
+             W_0, wconv, it_w, W0_hist = innerloopweight(TOGW_guss_init, S_wing, S_ht, S_vt, S_wet_fuselage, num_engines, Wcrew, Wpayload, T)
+             fuelWeightLand = (W_0 - (calc_empty_w(S_wing,S_ht,S_vt,S_wet_fuselage,W_0,T,1) + Wcrew + Wpayload))*0.25
+             landWeight =  fuelWeightLand + calc_empty_w(S_wing,S_ht,S_vt,S_wet_fuselage,W_0,T,1) + Wcrew + Wpayload
              W_Sreq = Landing_Constraint(W_0,landWeight,maxLandSpeed,CLmaxLand,density)
              Snew = W_0/W_Sreq
-             delta = abs(Snew - S_wing)/Snew
+             delta = abs(Snew - S_wing)
              S_wing = Snew
-        S_converged.append(S_wing)
-    return S_converged
-
-        
+        S_converged.append(Snew)
+    return np.array(S_converged)   
 
 S_grid = np.linspace(300, 600, 7)
-T_grid = np.linspace(0,70000,1000)
+T_grid = np.linspace(0,70000,10)
 
 tconv, W0conv, iters, T_hist_allS, *_ = outer_loop_thrust_for_climb_constraint(
     S_grid=S_grid,
@@ -192,7 +190,6 @@ tconv, W0conv, iters, T_hist_allS, *_ = outer_loop_thrust_for_climb_constraint(
 )
 
 S_convereged_landing_constraint = landing_constraint_wing_area(T_grid,40000,maxLandSpeed,Clmax,rhoTropicalDay)
-
 
 plt.figure()
 plt.plot(S_grid, tconv, marker='o')
