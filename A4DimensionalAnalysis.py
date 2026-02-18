@@ -27,6 +27,8 @@ Climb_Cd0 = 0.01696 # Climb drag coefficient (I just used the openVSP value agai
 e = 0.8 # Oswald efficiency factor (typical value for fighters)
 Ks = 1.8 # Stall speed factor 
 K = 1/(math.pi*e*AR) # Induced drag factor
+rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/ft^3 (for launch constraint)
+maxLandSpeed = 202.6 # Max landing speed in feet per second 
 
 
 
@@ -34,6 +36,12 @@ def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
     Climb_Intial = ((Ks**2*Climb_Cd0)/(Clmax))+((K*((Clmax)/Ks**2))+((Climb_Gradient)))
     Climb_Constraint = Climb_Intial*((1/.8)*(1/.99)) # Adjusting for fuel fractions and thrust reduction
     return Climb_Constraint
+
+# Landing Constraint finds wing loading for landing weights lbf,speeds ft/s, density slug/ft^3
+def Landing_Constraint(GTOW,landWeight,maxLandSpeed,CLmaxLand,density):
+    S_land = 2*landWeight/(density*((maxLandSpeed/1.15)**2)*CLmaxLand)
+    landWingLoading = GTOW/S_land
+    return landWingLoading
 
 def calc_e_w(T0):
     Wdry=.521*T0**.9
@@ -147,7 +155,27 @@ def outer_loop_thrust_for_climb_constraint(S_grid, TOGW_guss_init, T_total_guess
 
     return (np.array(T_total_converged), np.array(W0_converged), np.array(iter_counts), T_total_history_allS, W_0, wconv, it_w, W0_hist)
 
+def landing_constraint_wing_area(T_grid,TOGW_guss_init,maxLandSpeed,CLmaxLand,density):
+    tolerance = 10**(-3)
+    delta = 2*tolerance
+    S_converged = []
+    for T in T_grid:
+        T0 = T
+        S_wing = 100
+        while delta > tolerance:
+             W_0, wconv, it_w, W0_hist = innerloopweight(TOGW_guss_init, S_wing, S_ht, S_vt, S_wet_fuselage, num_engines, Wcrew, Wpayload, T0)
+             landWeight = W_0 - 0.75*calc_wf(L_D_max,R,E,c,V)
+             W_Sreq = Landing_Constraint(W_0,landWeight,maxLandSpeed,CLmaxLand,density)
+             Snew = W_0/W_Sreq
+             delta = abs(Snew - S_wing)/Snew
+             S_wing = Snew
+        S_converged.append(S_wing)
+    return S_converged
+
+        
+
 S_grid = np.linspace(300, 600, 7)
+T_grid = np.linspace(0,70000,1000)
 
 tconv, W0conv, iters, T_hist_allS, *_ = outer_loop_thrust_for_climb_constraint(
     S_grid=S_grid,
@@ -163,10 +191,21 @@ tconv, W0conv, iters, T_hist_allS, *_ = outer_loop_thrust_for_climb_constraint(
     coef_2_climb_constraint=0.0004
 )
 
+S_convereged_landing_constraint = landing_constraint_wing_area(T_grid,40000,maxLandSpeed,Clmax,rhoTropicalDay)
+
+
 plt.figure()
 plt.plot(S_grid, tconv, marker='o')
 plt.xlabel("Wing Area S (ft²)")
 plt.ylabel("Total Thrust (lb)")
 plt.title("Climb Constraint: Thrust vs Wing Area")
+plt.grid(True)
+plt.show()
+
+plt.figure()
+plt.plot(S_convereged_landing_constraint,T_grid)
+plt.xlabel("Wing Area S (ft²)")
+plt.ylabel("Total Thrust (lb)")
+plt.title("Landing Constraint: Thrust vs Wing Area")
 plt.grid(True)
 plt.show()
