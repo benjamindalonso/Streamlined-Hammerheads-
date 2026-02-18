@@ -98,7 +98,7 @@ def Weight_Fraction_Calculation(MaxLD, Range, Endurance, Ct, V):
 # This is where the constraints go (Basically what we did in assignment 3, don't put loops here)
 def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
     Climb_Intial = ((Ks**2*Climb_Cd0)/(Clmax))+((K*((Clmax)/Ks**2))+((Climb_Gradient)))
-    Climb_Constraint = Climb_Intial*((1/.8)*(1/.99)) # Adjusting for fuel fractions and thrust reduction
+    Climb_Constraint = Climb_Intial*((1/ThrustReduction)*(1/TakeoffFuelFraction)) # Adjusting for fuel fractions and thrust reduction
     return Climb_Constraint
 
 # Landing Constraint finds wing loading for landing weights lbf,speeds ft/s, density slug/ft^3
