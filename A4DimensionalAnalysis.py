@@ -235,6 +235,7 @@ T_climb, W0_climb = outer_loop_climb_constraint()
 # Landing Loop
 def outer_loop_landing_constraint(T_grid,TOGW_Guess_init,maxLandSpeed,CLmaxLand,density):
     tolerance = 10**(-6)
+    maxLandSpeed = maxLandSpeed + 25.3 # Adds 15 kts wind over deck in ft/s
     S_converged = []
     for T in T_grid:
         S_wing = 1
@@ -248,14 +249,13 @@ def outer_loop_landing_constraint(T_grid,TOGW_Guess_init,maxLandSpeed,CLmaxLand,
              delta = abs(Snew - S_wing)
              S_wing = Snew
         S_converged.append(Snew)
-    return np.array(S_converged)   
+    return np.array(S_converged)  
 
 S_grid = np.linspace(300, 600, 7)
 T_grid = np.linspace(0,70000,10)
 
 # Runs landing constraint
-S_converged_landing = outer_loop_landing_constraint(T_grid, TOGW_Guess, maxLandSpeed, Clmax, rhoTropicalDay)
-
+S_converged_landing = outer_loop_landing_constraint(T_grid, TOGW_Guess, maxLandSpeed, 2, rhoTropicalDay)
 
 # Launch loop
 T_levels = np.linspace(15000, 45000, 7)   # all the thrust values this loop will test
