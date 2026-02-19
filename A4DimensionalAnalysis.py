@@ -2,6 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+# Fighter T vs S comparison
+
+S_F22 = 840 # ft^2
+T_W_F22 = 1.4 # F-22 Raptor has a thrust-to-weight ratio of about 1.4 at takeoff
+TOGW_F22 = 60000 # lbf
+T_F22 = T_W_F22 * TOGW_F22 # lbf
+
+S_F35 = 460.05
+T_F35 = 43000
+
+
 # Fixed parameters (Add more as needed to the bottom of this list)
 MaxLD = 12
 Range = 2000                  # nmi
@@ -556,6 +567,12 @@ plt.plot(WingAreaGrid, T_cruise,
 plt.plot(WingAreaGrid, T_dash,
          linestyle='-', linewidth=1.8,
          color='C6', label='Dash constraint (Mach 2 @ 30k ft)')
+
+# F_22 point
+plt.scatter(S_F22, T_F22, color='k', marker='*', s=150, label='F-22 Raptor (S={}, T={:.0f} lbf)'.format(S_F22, T_F22))
+
+# F_35 point
+plt.scatter(S_F35, T_F35, color='m', marker='*', s=150, label='F-35 Lightning II (S={}, T={} lbf)'.format(S_F35, T_F35))
 
 # Formatting 
 plt.xlabel("Wing Area S  (ft²)", fontsize=12)
