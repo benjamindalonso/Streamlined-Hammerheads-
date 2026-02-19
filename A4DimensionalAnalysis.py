@@ -13,7 +13,8 @@ HorizTailArea = 100
 VertTailArea = 81
 WetAreaFuse = 180
 NumberOfEngines = 1  # Example number of engines
-TurnRate = 0.1745 # in Rad/s based on rfp preference of 10 deg/s
+TurnRate = 0.139626 # in Rad/s based on rfp minimum of 8 deg/s
+TurnRate_10deg = 0.174533 # in Rad/s based on rfp minimum of 10 deg/s
 g = 32.174 # ft/s^2 (gravitational acceleration)
 Vturn = 750 # Velocity during the maneuver in feet per second
 Cd0Turn = 0.00696 # Zero lift drag coefficient during the turn (I just used the openVSP value again)
@@ -282,6 +283,7 @@ def outer_loop_maneuver_constraint(
         WingAreaGrid,
         TOGW_Guess,
         TotalThrustInitialGuess,
+        TurnRate_input,
         tol_T_rel=1e-3,
         max_iter_T=100,
         relax=1.0):
@@ -313,7 +315,7 @@ def outer_loop_maneuver_constraint(
             WingLoading = Final_TOGW / WingArea
             # Maneuver T/W requirement
             TW_maneuver = Sustained_Turn_Constraint(
-                TurnRate,
+                TurnRate_input,
                 g,
                 Vturn,
                 Cd0Turn,
@@ -343,7 +345,14 @@ def outer_loop_maneuver_constraint(
 T_maneuver, W0_curve = outer_loop_maneuver_constraint(
     WingAreaGrid,
     TOGW_Guess,
-    TotalThrustInitialGuess
+    TotalThrustInitialGuess, TurnRate
+)
+
+T_maneuver_10, _ = outer_loop_maneuver_constraint(
+    WingAreaGrid,
+    TOGW_Guess,
+    TotalThrustInitialGuess,
+    TurnRate_10deg
 )
 
 
@@ -383,9 +392,12 @@ plt.plot(S_min_launch, T_levels,
          color='C4', label='Launch / Takeoff\n(min S to meet WS limit)')
 
 plt.plot(WingAreaGrid, T_maneuver,
-         marker='^', linestyle='-.', linewidth=1.8, markersize=7,
-         color='C2', label='Sustained Turn Constraint\n(10 deg/s at 20k ft)')
-# ADD NEW PLOTTING HERE FOLLOWING PREVIOUS FORMAT
+         marker='^', linestyle='-.', linewidth=1.8, markersize=5,
+         color='C1', label='Sustained Turn Constraint\n(8 deg/s minimum at 20k ft)')
+
+plt.plot(WingAreaGrid, T_maneuver_10,
+         marker='v', linestyle=':', linewidth=1.8, markersize=5,
+         color='C2', label='Sustained Turn Constraint\n(10 deg/s desired at 20k ft)')
 
 # Formatting 
 plt.xlabel("Wing Area S  (ft²)", fontsize=12)
