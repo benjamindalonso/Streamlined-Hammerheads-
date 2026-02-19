@@ -21,7 +21,7 @@ Cd0Turn = 0.00696 # Zero lift drag coefficient during the turn (I just used the 
 AR = 2.5
 K =  1/(math.pi*e*AR) # Induced drag factor
 rhoTurn = 0.001267 # Slugs per ft^3 (Density at 20,000 ft - maneuvering altitude per rfp)
-MidMissionFuelFraction =  0.906 # Fuel fraction half way through cruise portion of mission (This is based on the rfp requirements for maneuvering being done at "mid mission weight")
+MidMissionFuelFraction =  0.906 # Fuel fraction halfway through cruise portion of mission (This is based on the rfp requirements for maneuvering being done at "mid mission weight")
 TakeoffFuelFraction = 0.99 # Fuel fraction from assignment2code
 ClimbFuelFraction = 0.96 # Fuel fraction from assignment2code
 ThrustReduction =  0.8 # Thrust reduction factor at cruise (due to altitude and speed)
@@ -40,14 +40,19 @@ T_0 = 43000  # Example value for thrust per engine
 TotalThrustInitialGuess = T_0 * NumberOfEngines
 TOGW_Guess = 30000  # Initial guess for Takeoff Gross Weight in pounds
 WingAreaGrid = list(range(200, 1400, 5))  # range of wing areas to analyze
-Vend = 135 # Catipult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catipult 
+Vend = 135 # Catapult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catapult 
 Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
-Vthrust = 10 # Velocity added by engine thrust during catipult launch (Assumed to be 10 knots per Raymer page 136)
+Vthrust = 10 # Velocity added by engine thrust during catapult launch (Assumed to be 10 knots per Raymer page 136)
 ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
-rho_30k = 0.000889          # slug/ft^3 
-V_fts = V * 1.68781         # ft/s 
+rho_30k = 0.000889 # slug/ft^3 
+V_fts = V * 1.68781 # ft/s 
 q_cruise = 0.5 * rho_30k * V_fts**2
 CD0_cruise = 0.00696 
+a_dash = 994.0 # ft/s
+M_dash = 2.0
+V_dash = M_dash * a_dash
+q_dash = 0.5 * rho_30k * V_dash**2
+CD0_dash = CD0_cruise
 
 # Calculates weight of the crew
 NumberOfPilots = 1 # Number of pilots
@@ -359,7 +364,7 @@ T_maneuver_10, _ = outer_loop_maneuver_constraint(
     TurnRate_10deg
 )
 
-def cruise_TW_req_from_WS(WS, q_cruise, CD0_cruise):
+def cruise_TW_req(WS, q_cruise, CD0_cruise):
     return (q_cruise * CD0_cruise) / WS + (K * WS) / q_cruise
 
 def outer_loop_cruise_constraint(
@@ -401,7 +406,7 @@ def outer_loop_cruise_constraint(
 
             WS = W0 / S_wing
 
-            TW_req = cruise_TW_req_from_WS(WS, q_cruise, CD0_cruise)
+            TW_req = cruise_TW_req(WS, q_cruise, CD0_cruise)
             T_req = TW_req * W0  # total thrust required
 
             rel_error = abs(T_req - T_total) / max(abs(T_total), 1e-6)
@@ -429,6 +434,75 @@ T_cruise, W0_cruise = outer_loop_cruise_constraint(
     max_iter_T=60,
     relax=0.4
 )
+
+def dash_TW_req(WS, q_dash, CD0_dash):
+    return (q_dash * CD0_dash) / WS + (K * WS) / q_dash
+
+def outer_loop_dash_constraint(
+    wing_area_grid=WingAreaGrid,
+    TOGW_guess_init=30000,
+    T_total_guess_init=20000,
+    CD0_dash=0.00696,       
+    q_dash=1000.0,
+    tol_T_rel=1e-3,
+    max_iter_T=60,
+    relax=0.4
+):
+
+    T_converged = []
+    W0_converged = []
+
+    for S_wing in wing_area_grid:
+        T_total = T_total_guess_init
+
+        for iter_outer in range(max_iter_T):
+            T0_per_engine = T_total / NumberOfEngines
+
+            W0, converged_inner, it_inner, _ = Weight_Inner_Loop(
+                TOGW_Guess       = TOGW_guess_init,
+                WingArea         = S_wing,
+                HorizTailArea    = HorizTailArea,
+                VertTailArea     = VertTailArea,
+                WetAreaFuse      = WetAreaFuse,
+                NumberOfEngines  = NumberOfEngines,
+                WeightCrew       = WeightCrew,
+                WeightPayload    = WeightPayload,
+                T_0              = T0_per_engine
+            )
+
+            if not converged_inner:
+                print(f"[inner loop did not converge at S={S_wing}]")
+                break
+
+            WS = W0 / S_wing
+            TW_req = dash_TW_req(WS, q_dash, CD0_dash)
+            T_req = TW_req * W0
+
+            rel_error = abs(T_req - T_total) / max(abs(T_total), 1e-6)
+            if rel_error < tol_T_rel:
+                T_converged.append(T_req)
+                W0_converged.append(W0)
+                break
+
+            T_total = (1 - relax) * T_total + relax * T_req
+
+        else:
+            T_converged.append(T_req)
+            W0_converged.append(W0)
+
+    return np.array(T_converged), np.array(W0_converged)
+
+# runs dash constraint
+T_dash, W0_dash = outer_loop_dash_constraint(
+    wing_area_grid=WingAreaGrid,
+    TOGW_guess_init=TOGW_Guess,
+    T_total_guess_init=TotalThrustInitialGuess,
+    CD0_dash=CD0_dash,
+    q_dash=q_dash,
+    tol_T_rel=1e-3,
+    max_iter_T=60,
+    relax=0.4
+    
 # =============================================================================
 #   FINAL CONSTRAINT DIAGRAM + SUMMARY OUTPUT
 # ============================================================================
@@ -476,6 +550,11 @@ plt.plot(WingAreaGrid, T_maneuver_10,
 plt.plot(WingAreaGrid, T_cruise,
          marker='x', linestyle='-', linewidth=1.8, markersize=5,
          color='C5', label='Cruise constraint (30k ft)')
+
+# Dash constraint: Thrust required vs Wing area
+plt.plot(WingAreaGrid, T_dash,
+         linestyle='-', linewidth=1.8,
+         color='C6', label='Dash constraint (Mach 2 @ 30k ft)')
 
 # Formatting 
 plt.xlabel("Wing Area S  (ft²)", fontsize=12)
