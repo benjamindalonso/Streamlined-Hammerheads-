@@ -574,16 +574,16 @@ plt.plot(WingAreaGrid, T_dash,
          color='C6', label='Dash constraint (Mach 2 @ 30k ft)')
 
 # F_22 point
-plt.scatter(S_F22, T_F22, color='k', marker='*', s=150, label='F-22 Raptor (S={}, T={:.0f} lbf)'.format(S_F22, T_F22))
+plt.scatter(S_F22, T_F22, color='k', marker='*', s=150, label='F-22 Raptor (S={}ft^2, T={:.0f} lbf)'.format(S_F22, T_F22))
 
 # F_35 point
-plt.scatter(S_F35, T_F35, color='m', marker='*', s=150, label='F-35 Lightning II (S={}, T={} lbf)'.format(S_F35, T_F35))
+plt.scatter(S_F35, T_F35, color='m', marker='*', s=150, label='F-35 Lightning II (S={} ft^2, T={} lbf)'.format(S_F35, T_F35))
 
 # Dasssault Rafale M
-plt.scatter(S_DRM,T_DRM,color='r', marker='*', s=150, label='Rafale M (S={}, T={} lbf)'.format(S_DRM, T_DRM))
+plt.scatter(S_DRM,T_DRM,color='r', marker='*', s=150, label='Rafale M (S={} ft^2, T={} lbf)'.format(S_DRM, T_DRM))
 
 # F-18
-plt.scatter(S_F18,T_F18,color='b', marker='*', s=150, label='F-18 Super Hornet (S={}, T={} lbf)'.format(S_F18, T_F18))
+plt.scatter(S_F18,T_F18,color='b', marker='*', s=150, label='F-18 Super Hornet (S={} ft^2, T={} lbf)'.format(S_F18, T_F18))
 
 # Formatting 
 plt.xlabel("Wing Area S  (ft²)", fontsize=12)
