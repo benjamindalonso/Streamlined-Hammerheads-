@@ -12,6 +12,11 @@ T_F22 = T_W_F22 * TOGW_F22 # lbf
 S_F35 = 460.05
 T_F35 = 43000
 
+S_DRM = 45.7*10.764 # Wing Area for Dassalt Rafale M (m^2 ---> ft^2)
+T_DRM = 16860*2 # Thrust for Dassault Rafale M (lbf)
+
+S_F18 = 500 # F-18 wing area(ft^2)
+T_F18 = 44000 # F-18 thrust (lbf)
 
 # Fixed parameters (Add more as needed to the bottom of this list)
 MaxLD = 12
@@ -573,6 +578,12 @@ plt.scatter(S_F22, T_F22, color='k', marker='*', s=150, label='F-22 Raptor (S={}
 
 # F_35 point
 plt.scatter(S_F35, T_F35, color='m', marker='*', s=150, label='F-35 Lightning II (S={}, T={} lbf)'.format(S_F35, T_F35))
+
+# Dasssault Rafale M
+plt.scatter(S_DRM,T_DRM,color='r', marker='*', s=150, label='Rafale M (S={}, T={} lbf)'.format(S_DRM, T_DRM))
+
+# F-18
+plt.scatter(S_F18,T_F18,color='b', marker='*', s=150, label='F-18 Super Hornet (S={}, T={} lbf)'.format(S_F18, T_F18))
 
 # Formatting 
 plt.xlabel("Wing Area S  (ft²)", fontsize=12)
