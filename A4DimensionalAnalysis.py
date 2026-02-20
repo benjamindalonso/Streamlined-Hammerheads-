@@ -53,6 +53,7 @@ M_dash = 2.0
 V_dash = M_dash * a_dash
 q_dash = 0.5 * rho_30k * V_dash**2
 CD0_dash = CD0_cruise
+Vstall = 135
 
 # Calculates weight of the crew
 NumberOfPilots = 1 # Number of pilots
@@ -178,6 +179,7 @@ plt.show()
 
 # Here is where loops go
 
+
 # Climb Loop
 def outer_loop_climb_constraint(
     wing_area_grid=WingAreaGrid,           
@@ -286,6 +288,20 @@ for T in T_levels:
     WS_max = 0.5 * rhoTropicalDay * ((Vend + Vwod + Vthrust)**2) * ClmaxTakeOff / 1.21
     S_min = W0 / WS_max
     S_min_launch.append(S_min)
+    
+
+# Stall Loop 
+T_level = np.linspace(15000, 45000, 7)
+S_min_stall = []; 
+for T in T_level:
+    T_0 = T / NumberOfEngines
+    W0, wconv, it_w, W0_hist = Weight_Inner_Loop(
+        TOGW_Guess, WingArea, HorizTailArea, VertTailArea, WetAreaFuse,
+        NumberOfEngines, WeightCrew, WeightPayload, T_0
+    )
+    WS_max = 0.5 * rhoTropicalDay * (135**2) * Clmax
+    S_min = W0 / WS_max
+    S_min_stall.append(S_min) 
 
 # Maneuver loop
 def outer_loop_maneuver_constraint(
@@ -556,6 +572,11 @@ plt.plot(WingAreaGrid, T_cruise,
 plt.plot(WingAreaGrid, T_dash,
          linestyle='-', linewidth=1.8,
          color='C6', label='Dash constraint (Mach 2 @ 30k ft)')
+
+# Stall Constrain: 
+plt.plot(S_min_stall, T_level,
+         marker='P', linestyle='--', linewidth=1.6, markersize=8,
+         color='C7', label='Stall constraint (Vₛₜₐₗₗ = {} knots)'.format(Vstall))
 
 # Formatting 
 plt.xlabel("Wing Area S  (ft²)", fontsize=12)
