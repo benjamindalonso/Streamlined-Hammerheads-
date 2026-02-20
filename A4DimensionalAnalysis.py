@@ -380,20 +380,25 @@ T_maneuver_10, _ = outer_loop_maneuver_constraint(
     TurnRate_10deg
 )
 
-def cruise_TW_req(WS, q_cruise, CD0_cruise):
-    return (q_cruise * CD0_cruise) / WS + (K * WS) / q_cruise
+def cruise_TW_req_SLS(WingLoading_W0S, q_cruise, CD0_cruise,
+                      FuelFrac_cruise, ThrustReduction_cruise):
+    WS_cruise = WingLoading_W0S * FuelFrac_cruise
+    TW_alt = (q_cruise * CD0_cruise) / WS_cruise + (K * WS_cruise) / q_cruise
+    TW_SLS = TW_alt * (FuelFrac_cruise / ThrustReduction_cruise)
+    return TW_SLS
 
 def outer_loop_cruise_constraint(
     wing_area_grid=WingAreaGrid,
     TOGW_guess_init=30000,
     T_total_guess_init=20000,
-    CD0_cruise=0.00696,
+    CD0_cruise=0.00696,    
     q_cruise=300.0,
+    FuelFrac_cruise=0.90, 
+    ThrustReduction_cruise=0.8,
     tol_T_rel=1e-3,
     max_iter_T=60,
     relax=0.4
 ):
-
     T_converged = []
     W0_converged = []
 
@@ -401,7 +406,6 @@ def outer_loop_cruise_constraint(
         T_total = T_total_guess_init
 
         for iter_outer in range(max_iter_T):
-            # thrust per engine for engine weight model
             T0_per_engine = T_total / NumberOfEngines
 
             W0, converged_inner, it_inner, _ = Weight_Inner_Loop(
@@ -420,10 +424,17 @@ def outer_loop_cruise_constraint(
                 print(f"[inner loop did not converge at S={S_wing}]")
                 break
 
-            WS = W0 / S_wing
+            WS_W0 = W0 / S_wing  # W0/S
 
-            TW_req = cruise_TW_req(WS, q_cruise, CD0_cruise)
-            T_req = TW_req * W0  # total thrust required
+            TW_req_SLS = cruise_TW_req_SLS(
+                WingLoading_W0S=WS_W0,
+                q_cruise=q_cruise,
+                CD0_cruise=CD0_cruise,
+                FuelFrac_cruise=FuelFrac_cruise,
+                ThrustReduction_cruise=ThrustReduction_cruise
+            )
+
+            T_req = TW_req_SLS * W0
 
             rel_error = abs(T_req - T_total) / max(abs(T_total), 1e-6)
             if rel_error < tol_T_rel:
@@ -440,12 +451,16 @@ def outer_loop_cruise_constraint(
     return np.array(T_converged), np.array(W0_converged)
 
 # runs cruise constraint
+FuelFrac_cruise = TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction
+
 T_cruise, W0_cruise = outer_loop_cruise_constraint(
     wing_area_grid=WingAreaGrid,
     TOGW_guess_init=TOGW_Guess,
     T_total_guess_init=TotalThrustInitialGuess,
-    CD0_cruise=CD0_cruise,
+    CD0_cruise=0.00696,   
     q_cruise=q_cruise,
+    FuelFrac_cruise=FuelFrac_cruise,
+    ThrustReduction_cruise=ThrustReduction,
     tol_T_rel=1e-3,
     max_iter_T=60,
     relax=0.4
