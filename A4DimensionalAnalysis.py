@@ -343,17 +343,6 @@ for T_total in T_levels_launch:
         S_min_launch.append(np.nan)
         T_for_plot.append(T_total)
 
-#Stall loop
-T_level = np.linspace(15000, 45000, 7)
-S_min_stall = []; 
-for T in T_level:
-    T_0 = T / NumberOfEngines
-    W0, wconv, it_w, W0_hist= Weight_Inner_Loop( TOGW_Guess, WingArea, HorizTailArea, VertTailArea, WetAreaFuse, NumberOfEngines, WeightCrew, WeightPayload, T_0)
-    WS_max = 0.5 * rhoTropicalDay * (Vstall**2) * Clmax / 1.21
-    S_min = W0 / WS_max
-    S_min_stall.append(S_min)
-
-
     
 # Maneuver loop
 def outer_loop_maneuver_constraint(
@@ -646,10 +635,6 @@ plt.plot(WingAreaGrid, T_dash,
          linestyle='-', linewidth=2.0, color='C6',
          label='Dash (Mach 2 @ 30k ft)')
 
-# Stall Constrain: 
-plt.plot(S_min_stall, T_level,
-         marker='P', linestyle='--', linewidth=1.6, markersize=8,
-         color='C7', label='Stall constraint (Vₛₜₐₗₗ = {} knots)'.format(Vstall))
 
 # Example aircraft (keep stars only)
 plt.scatter(S_F22, T_F22, color='k', marker='*', s=180,
