@@ -4,7 +4,7 @@ import math
 
 # Our Chosen Design Point
 S_Design = 665 # Ft^2
-T_Design = 43000 # lbf
+T_Design = 43000 # lbff
 
 # Fighter T vs S comparison
 
