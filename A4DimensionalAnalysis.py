@@ -77,7 +77,6 @@ M_dash = 2.0
 V_dash = M_dash * a_dash
 q_dash = 0.5 * rho_30k * V_dash**2
 CD0_dash = CD0_cruise
-Vstall = 135
 
 # Calculates weight of the crew
 NumberOfPilots = 1 # Number of pilots
@@ -203,7 +202,6 @@ plt.show()
 
 # Here is where loops go
 
-
 # Climb Loop
 def outer_loop_climb_constraint(
     wing_area_grid=WingAreaGrid,           
@@ -302,12 +300,6 @@ for T_total in T_levels_launch:
     WS_max = 0.5 * rhoTropicalDay * ((Vendfps + Vwodfps + Vthrustfps)**2) * ClmaxTakeOff / 1.21
 
     
-    WS_max = 0.5 * rhoTropicalDay * ((Vend + Vwod + Vthrust)**2) * ClmaxTakeOff / 1.21
-    S_min = W0 / WS_max
-    S_min_launch.append(S_min)
-    
-
-    
     min_S_found = np.inf
     feasible = False
     
@@ -343,7 +335,6 @@ for T_total in T_levels_launch:
         S_min_launch.append(np.nan)
         T_for_plot.append(T_total)
 
-    
 # Maneuver loop
 def outer_loop_maneuver_constraint(
         WingAreaGrid,
@@ -579,7 +570,18 @@ T_dash, W0_dash = outer_loop_dash_constraint(
     max_iter_T=60,
     relax=0.4
 )
-    
+
+# --- Stall Constraint Calculation ---
+# Per text: V_landing ≈ 1.15 * V_stall
+V_stall_req = 227
+
+# Calculate the minimum S for your design weight W0
+# Formula: S = (2 * W) / (rho * V_stall^2 * CLmax)
+W0_design = W0  # Use the converged W0 from your Weight_Inner_Loop
+S_min_stall = (2 * W0_design) / (rhoTropicalDay * (V_stall_req**2) * Clmax)
+
+print(f"Minimum Wing Area required for Stall: {S_min_stall:.2f} ft^2")
+
 # =============================================================================
 #   FINAL CONSTRAINT DIAGRAM + SUMMARY OUTPUT
 # ============================================================================
@@ -599,6 +601,12 @@ print("="*60 + "\n")
 
 # ─── Combined Constraint Diagram ────────────────────────────────────────────
 plt.figure(figsize=(11, 7))
+
+# ─── Stall Constraint ──────────────────────────────────────────────────────
+# This represents the vertical limit on the left side of the diagram
+plt.axvline(x=S_min_stall, color='C7', linestyle='--', linewidth=2.5, 
+            label=f'Stall Limit (Smin = {S_min_stall:.1f} ft²)')
+
 
 # Climb constraint
 plt.plot(WingAreaGrid, T_climb,
@@ -634,7 +642,6 @@ plt.plot(WingAreaGrid, T_cruise,
 plt.plot(WingAreaGrid, T_dash,
          linestyle='-', linewidth=2.0, color='C6',
          label='Dash (Mach 2 @ 30k ft)')
-
 
 # Example aircraft (keep stars only)
 plt.scatter(S_F22, T_F22, color='k', marker='*', s=180,
