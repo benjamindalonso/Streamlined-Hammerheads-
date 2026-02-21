@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import math
 
 # Our Chosen Design Point
-S_Design = 665 # Ft^2
+S_Design = 550 # Ft^2
 T_Design = 43000 # lbff
 
 # Fighter T vs S comparison
@@ -47,7 +47,7 @@ ClimbFuelFraction = 0.96 # Fuel fraction from assignment2code
 ThrustReduction =  0.8 # Thrust reduction factor at cruise (due to altitude and speed)
 WingArea = 610
 E = 0.333         # hr loiter
-Clmax = 1.5 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
+CLmaxLanding = 2.0 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
 ROC = 200 # Rate of climb ft/min
 V_horizontal = 500 * 1.68781  # Climb airspeed knots to ft/s
 V_horizontal_min = V_horizontal * 60  # Climb airspeed in ft/min
@@ -67,7 +67,9 @@ Vthrust = 10 # Velocity added by engine thrust during catapult launch (Assumed t
 Vendfps = 1.6878 * Vend # This converts knots to feet per second
 Vwodfps = 1.6878 * Vwod # This converts knots to feet per second
 Vthrustfps = 1.6878 * Vthrust # This converts knots to feet per second
-ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
+ClmaxTakeOff = 2.0 # Clmax at takeoff per slide 11 of preliminary sizing part 2
+Clmax = 1.8 # Climb Cl max (clean configuration) per slide 11 of preliinary sizing part 2
+ClmaxStall = 2.6 # Maximum cl based on slide 11 of pleminiary sizing part 2
 rho_30k = 0.000889 # slug/ft^3 
 V_fts = V * 1.68781 # ft/s 
 q_cruise = 0.5 * rho_30k * V_fts**2
@@ -77,6 +79,8 @@ M_dash = 2.0
 V_dash = M_dash * a_dash
 q_dash = 0.5 * rho_30k * V_dash**2
 CD0_dash = CD0_cruise
+Vstall = 115 # Target stall speed in knots
+Vstallfps = 1.6878 * Vstall # Target stall speed in feet per second
 
 # Calculates weight of the crew
 NumberOfPilots = 1 # Number of pilots
@@ -290,23 +294,29 @@ T_grid = np.linspace(0,70000,10)
 # Runs landing constraint
 S_converged_landing = outer_loop_landing_constraint(T_grid, TOGW_Guess, maxLandSpeed, 2, rhoTropicalDay)
 
-# Launch loop
+# Launch/stall loop
 T_levels_launch = np.linspace(20000, 75000, 10)   # adjust range as needed
 S_min_launch = []
 T_for_plot = []  # to plot T vs min S
+S_min_stall = []
+T_for_plotstall = []
 
 for T_total in T_levels_launch:
     T0 = T_total / NumberOfEngines
-    WS_max = 0.5 * rhoTropicalDay * ((Vendfps + Vwodfps + Vthrustfps)**2) * ClmaxTakeOff / 1.21
+    WS_max_launch = 0.5 * rhoTropicalDay * ((Vendfps + Vwodfps + Vthrustfps)**2) * ClmaxTakeOff / 1.21
+    WS_max_stall  = 0.5 * rhoTropicalDay * (Vstallfps ** 2) * ClmaxStall
 
     
-    min_S_found = np.inf
-    feasible = False
+    # Initialize per thrust level
+    min_S_launch_this = np.inf
+    min_S_stall_this  = np.inf
+    feasible          = False
+    feasibleStall     = False
     
     for S_wing in WingAreaGrid:
         W0, converged, _, _ = Weight_Inner_Loop(
             TOGW_Guess    = TOGW_Guess,
-            WingArea      = S_wing,          # ← use grid values here
+            WingArea      = S_wing,
             HorizTailArea = HorizTailArea,
             VertTailArea  = VertTailArea,
             WetAreaFuse   = WetAreaFuse,
@@ -318,22 +328,38 @@ for T_total in T_levels_launch:
             max_iter=1000
         )
         
-    
+        if not converged:
+            continue  # skip bad solutions — optional but recommended
         
         WS = W0 / S_wing
         
-        
-        if WS <= WS_max:
+        if WS <= WS_max_launch:
             feasible = True
-            if S_wing < min_S_found:
-                min_S_found = S_wing
+            if S_wing < min_S_launch_this:
+                min_S_launch_this = S_wing
+
+        if WS <= WS_max_stall:
+            feasibleStall = True
+            if S_wing < min_S_stall_this:
+                min_S_stall_this = S_wing
     
-    if feasible:
-        S_min_launch.append(min_S_found)
+    # After checking all wing areas for this thrust level
+    if feasible and np.isfinite(min_S_launch_this):
+        S_min_launch.append(min_S_launch_this)
         T_for_plot.append(T_total)
     else:
         S_min_launch.append(np.nan)
         T_for_plot.append(T_total)
+
+    if feasibleStall and np.isfinite(min_S_stall_this):
+        S_min_stall.append(min_S_stall_this)
+        T_for_plotstall.append(T_total)
+    else:
+        S_min_stall.append(np.nan)
+        T_for_plotstall.append(T_total)
+           
+    
+    
 
 # Maneuver loop
 def outer_loop_maneuver_constraint(
@@ -571,16 +597,6 @@ T_dash, W0_dash = outer_loop_dash_constraint(
     relax=0.4
 )
 
-# --- Stall Constraint Calculation ---
-# Per text: V_landing ≈ 1.15 * V_stall
-V_stall_req = 227
-
-# Calculate the minimum S for your design weight W0
-# Formula: S = (2 * W) / (rho * V_stall^2 * CLmax)
-W0_design = W0  # Use the converged W0 from your Weight_Inner_Loop
-S_min_stall = (2 * W0_design) / (rhoTropicalDay * (V_stall_req**2) * Clmax)
-
-print(f"Minimum Wing Area required for Stall: {S_min_stall:.2f} ft^2")
 
 # =============================================================================
 #   FINAL CONSTRAINT DIAGRAM + SUMMARY OUTPUT
@@ -604,8 +620,8 @@ plt.figure(figsize=(11, 7))
 
 # ─── Stall Constraint ──────────────────────────────────────────────────────
 # This represents the vertical limit on the left side of the diagram
-plt.axvline(x=S_min_stall, color='C7', linestyle='--', linewidth=2.5, 
-            label=f'Stall Limit (Smin = {S_min_stall:.1f} ft²)')
+#plt.axvline(x=S_min_stall, color='C7', linestyle='--', linewidth=2.5, 
+            #label=f'Stall Limit (Smin = {S_min_stall:.1f} ft²)')
 
 
 # Climb constraint
@@ -642,6 +658,12 @@ plt.plot(WingAreaGrid, T_cruise,
 plt.plot(WingAreaGrid, T_dash,
          linestyle='-', linewidth=2.0, color='C6',
          label='Dash (Mach 2 @ 30k ft)')
+
+# Stall Constraint
+plt.plot(S_min_stall, T_for_plotstall,
+         linestyle=':', linewidth=2.0, color='C8',
+         label='Stall (min S for WS limit)')
+
 
 # Example aircraft (keep stars only)
 plt.scatter(S_F22, T_F22, color='k', marker='*', s=180,
