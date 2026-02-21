@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+# Our Chosen Design Point
+S_Design = 665 # Ft^2
+T_Design = 43000 # lbf
+
 # Fighter T vs S comparison
 
 S_F22 = 840 # ft^2
@@ -37,7 +41,7 @@ Cd0Turn = 0.00696 # Zero lift drag coefficient during the turn (I just used the 
 AR = 2.5
 K =  1/(math.pi*e*AR) # Induced drag factor
 rhoTurn = 0.001267 # Slugs per ft^3 (Density at 20,000 ft - maneuvering altitude per rfp)
-MidMissionFuelFraction =  0.906 # Fuel fraction halfway through cruise portion of mission (This is based on the rfp requirements for maneuvering being done at "mid mission weight")
+MidMissionFuelFraction =  0.83 # Fuel fraction halfway through cruise portion of mission (This is based on the rfp requirements for maneuvering being done at "mid mission weight")
 TakeoffFuelFraction = 0.99 # Fuel fraction from assignment2code
 ClimbFuelFraction = 0.96 # Fuel fraction from assignment2code
 ThrustReduction =  0.8 # Thrust reduction factor at cruise (due to altitude and speed)
@@ -54,11 +58,15 @@ rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/f
 maxLandSpeed = 202.6 # Max landing speed in feet per second 
 T_0 = 43000  # Example value for thrust per engine
 TotalThrustInitialGuess = T_0 * NumberOfEngines
-TOGW_Guess = 30000  # Initial guess for Takeoff Gross Weight in pounds
-WingAreaGrid = list(range(200, 1400, 5))  # range of wing areas to analyze
+TOGW_Guess = 50000  # Initial guess for Takeoff Gross Weight in pounds
+WingAreaGrid = list(range(100, 1200, 5))  # range of wing areas to analyze
+WingAreaGridManeuver = list(range(475,1200,5)) # The thrust required blows up to infinity at low wing areas, this fixes that
 Vend = 135 # Catapult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catapult 
 Vwod = 0 # Wind speed over the deck in knots (Assumed 0 for worst case scenario)
 Vthrust = 10 # Velocity added by engine thrust during catapult launch (Assumed to be 10 knots per Raymer page 136)
+Vendfps = 1.6878 * Vend # This converts knots to feet per second
+Vwodfps = 1.6878 * Vwod # This converts knots to feet per second
+Vthrustfps = 1.6878 * Vthrust # This converts knots to feet per second
 ClmaxTakeOff = 1.7 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 rho_30k = 0.000889 # slug/ft^3 
 V_fts = V * 1.68781 # ft/s 
@@ -150,7 +158,7 @@ def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, K, Wing_Loading, rho, Mid
 
 #---------------------------------------------------------------------------
 # Weight Inner Loop Calculation
-def Weight_Inner_Loop(TOGW_Guess, WingArea, HorizTailArea, VertTailArea, WetAreaFuse, NumberOfEngines, WeightCrew, WeightPayload, T_0, err=1e-6, max_iter=200):
+def Weight_Inner_Loop(TOGW_Guess, WingArea, HorizTailArea, VertTailArea, WetAreaFuse, NumberOfEngines, WeightCrew, WeightPayload, T_0, err=1e-6, max_iter=1000):
     W0_history = []
     delta = np.inf
     it = 0
@@ -283,25 +291,49 @@ T_grid = np.linspace(0,70000,10)
 S_converged_landing = outer_loop_landing_constraint(T_grid, TOGW_Guess, maxLandSpeed, 2, rhoTropicalDay)
 
 # Launch loop
-T_levels = np.linspace(15000, 45000, 7)   # all the thrust values this loop will test
+T_levels_launch = np.linspace(20000, 75000, 10)   # adjust range as needed
 S_min_launch = []
-for T in T_levels:
-    T0 = T / NumberOfEngines
-    W0, _, _, _ = Weight_Inner_Loop(
-        TOGW_Guess    = TOGW_Guess,
-        WingArea      = WingArea,
-        HorizTailArea = HorizTailArea,
-        VertTailArea  = VertTailArea,
-        WetAreaFuse   = WetAreaFuse,
-        NumberOfEngines = NumberOfEngines,
-        WeightCrew    = WeightCrew,
-        WeightPayload = WeightPayload,
-        T_0           = T0
-    )
+T_for_plot = []  # to plot T vs min S
+
+for T_total in T_levels_launch:
+    T0 = T_total / NumberOfEngines
+    WS_max = 0.5 * rhoTropicalDay * ((Vendfps + Vwodfps + Vthrustfps)**2) * ClmaxTakeOff / 1.21
+
     
-    WS_max = 0.5 * rhoTropicalDay * ((Vend + Vwod + Vthrust)**2) * ClmaxTakeOff / 1.21
-    S_min = W0 / WS_max
-    S_min_launch.append(S_min)
+    min_S_found = np.inf
+    feasible = False
+    
+    for S_wing in WingAreaGrid:
+        W0, converged, _, _ = Weight_Inner_Loop(
+            TOGW_Guess    = TOGW_Guess,
+            WingArea      = S_wing,          # ← use grid values here
+            HorizTailArea = HorizTailArea,
+            VertTailArea  = VertTailArea,
+            WetAreaFuse   = WetAreaFuse,
+            NumberOfEngines = NumberOfEngines,
+            WeightCrew    = WeightCrew,
+            WeightPayload = WeightPayload,
+            T_0           = T0,
+            err=1e-5,
+            max_iter=1000
+        )
+        
+    
+        
+        WS = W0 / S_wing
+        
+        
+        if WS <= WS_max:
+            feasible = True
+            if S_wing < min_S_found:
+                min_S_found = S_wing
+    
+    if feasible:
+        S_min_launch.append(min_S_found)
+        T_for_plot.append(T_total)
+    else:
+        S_min_launch.append(np.nan)
+        T_for_plot.append(T_total)
 
 # Maneuver loop
 def outer_loop_maneuver_constraint(
@@ -309,14 +341,14 @@ def outer_loop_maneuver_constraint(
         TOGW_Guess,
         TotalThrustInitialGuess,
         TurnRate_input,
-        tol_T_rel=1e-3,
+        tol_T_rel=1e-2,
         max_iter_T=100,
-        relax=1.0):
+        relax=1):
 
     T_total_converged = []
     W0_converged = []
 
-    for WingArea in WingAreaGrid:
+    for WingArea in WingAreaGridManeuver:
 
         T_total = TotalThrustInitialGuess
 
@@ -324,6 +356,7 @@ def outer_loop_maneuver_constraint(
 
             # Thrust per engine
             T_0 = T_total / NumberOfEngines
+        
 
             # Inner weight loop
             Final_TOGW, Converged, Iterations, _ = Weight_Inner_Loop(
@@ -338,6 +371,9 @@ def outer_loop_maneuver_constraint(
                 T_0
             )
             WingLoading = Final_TOGW / WingArea
+            
+        
+           
             # Maneuver T/W requirement
             TW_maneuver = Sustained_Turn_Constraint(
                 TurnRate_input,
@@ -555,56 +591,61 @@ print("="*60 + "\n")
 # ─── Combined Constraint Diagram ────────────────────────────────────────────
 plt.figure(figsize=(11, 7))
 
-# Climb constraint: Thrust required vs Wing Area
+# Climb constraint
 plt.plot(WingAreaGrid, T_climb,
-         marker='o', linestyle='-', linewidth=1.8, markersize=7,
-         color='C0', label='Climb constraint (ROC + lapse adjustment)')
+         linestyle='-', linewidth=2.0, color='C0',
+         label='Climb (ROC + lapse adjustment)')
 
-# Landing constraint: Thrust vs Required Wing Area (minimum S for given T)
+# Landing constraint
 plt.plot(S_converged_landing, T_grid,
-         marker='s', linestyle='--', linewidth=1.8, markersize=7,
-         color='C3', label='Landing constraint (max landing speed = {} ft/s)'.format(maxLandSpeed))
+         linestyle='--', linewidth=2.0, color='C3',
+         label=f'Landing (max speed = {maxLandSpeed:.1f} ft/s)')
 
-# Launch constraint: Thrust required vs wing area
-plt.plot(S_min_launch, T_levels,
-         marker='D', linestyle=':', linewidth=1.6, markersize=8,
-         color='C4', label='Launch / Takeoff\n(min S to meet WS limit)')
+# Launch / Takeoff constraint
+plt.plot(S_min_launch, T_for_plot,
+         linestyle=':', linewidth=2.0, color='C4',
+         label='Launch / Takeoff (min S for WS limit)')
 
-plt.plot(WingAreaGrid, T_maneuver,
-         marker='^', linestyle='-.', linewidth=1.8, markersize=5,
-         color='C1', label='Sustained Turn Constraint\n(8 deg/s minimum at 20k ft)')
+# Sustained Turn (8 deg/s)
+plt.plot(WingAreaGridManeuver, T_maneuver,
+         linestyle='-.', linewidth=2.0, color='C1',
+         label='Sustained Turn (8 deg/s min @ 20k ft)')
 
-plt.plot(WingAreaGrid, T_maneuver_10,
-         marker='v', linestyle=':', linewidth=1.8, markersize=5,
-         color='C2', label='Sustained Turn Constraint\n(10 deg/s desired at 20k ft)')
+# Sustained Turn (10 deg/s)
+plt.plot(WingAreaGridManeuver, T_maneuver_10,
+         linestyle=':', linewidth=2.0, color='C2',
+         label='Sustained Turn (10 deg/s desired @ 20k ft)')
 
-# Cruise constraint: Thrust required vs Wing area
+# Cruise constraint
 plt.plot(WingAreaGrid, T_cruise,
-         marker='x', linestyle='-', linewidth=1.8, markersize=5,
-         color='C5', label='Cruise constraint (30k ft)')
+         linestyle='-', linewidth=2.0, color='C5',
+         label='Cruise (30k ft)')
 
-# Dash constraint: Thrust required vs Wing area
+# Dash constraint
 plt.plot(WingAreaGrid, T_dash,
-         linestyle='-', linewidth=1.8,
-         color='C6', label='Dash constraint (Mach 2 @ 30k ft)')
+         linestyle='-', linewidth=2.0, color='C6',
+         label='Dash (Mach 2 @ 30k ft)')
 
-# F_22 point
-plt.scatter(S_F22, T_F22, color='k', marker='*', s=150, label='F-22 Raptor (S={}ft^2, T={:.0f} lbf)'.format(S_F22, T_F22))
+# Example aircraft (keep stars only)
+plt.scatter(S_F22, T_F22, color='k', marker='*', s=180,
+            label=f'F-22 Raptor (S={S_F22:.0f} ft², T={T_F22:.0f} lbf)')
+plt.scatter(S_F35, T_F35, color='m', marker='*', s=180,
+            label=f'F-35 Lightning II (S={S_F35:.1f} ft², T={T_F35:.0f} lbf)')
+plt.scatter(S_DRM, T_DRM, color='r', marker='*', s=180,
+            label=f'Rafale M (S={S_DRM:.1f} ft², T={T_DRM:.0f} lbf)')
+plt.scatter(S_F18, T_F18, color='b', marker='*', s=180,
+            label=f'F-18 Super Hornet (S={S_F18:.0f} ft², T={T_F18:.0f} lbf)')
 
-# F_35 point
-plt.scatter(S_F35, T_F35, color='m', marker='*', s=150, label='F-35 Lightning II (S={} ft^2, T={} lbf)'.format(S_F35, T_F35))
+# Our chosen design point 
+plt.scatter(S_Design, T_Design, color='g', marker='*', s=180,
+            label=f'Our Design Point (S={S_Design:.0f} ft², T={T_Design:.0f} lbf)')
 
-# Dasssault Rafale M
-plt.scatter(S_DRM,T_DRM,color='r', marker='*', s=150, label='Rafale M (S={} ft^2, T={} lbf)'.format(S_DRM, T_DRM))
-
-# F-18
-plt.scatter(S_F18,T_F18,color='b', marker='*', s=150, label='F-18 Super Hornet (S={} ft^2, T={} lbf)'.format(S_F18, T_F18))
-
-# Formatting 
-plt.xlabel("Wing Area S  (ft²)", fontsize=12)
-plt.ylabel("Total Thrust Required  (lbf)", fontsize=12)
-plt.title("Aircraft Sizing Constraint Diagram\n", fontsize=14, fontweight='bold')
-plt.grid(True, linestyle='--', alpha=0.7)
-plt.legend(fontsize=11, loc='upper right', framealpha=0.95, edgecolor='gray')
+# Formatting
+plt.xlabel("Wing Area S  (ft²)", fontsize=13)
+plt.ylabel("Total Thrust Required  (lbf)", fontsize=13)
+plt.title("Aircraft Sizing Constraint Diagram", fontsize=15, fontweight='bold')
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.legend(fontsize=9, loc='upper left', framealpha=0.95, edgecolor='gray',
+           ncol=1, columnspacing=1.0, labelspacing=0.5)
 plt.tight_layout()
 plt.show()
