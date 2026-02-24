@@ -667,17 +667,17 @@ plt.plot(S_min_stall, T_for_plotstall,
 
 
 # Example aircraft (keep stars only)
-plt.scatter(S_F22, T_F22, color='k', marker='*', s=180,
+plt.scatter(S_F22, T_F22, color='k', marker='o', s=50,
             label=f'F-22 Raptor (S={S_F22:.0f} ft², T={T_F22:.0f} lbf)')
-plt.scatter(S_F35, T_F35, color='m', marker='*', s=180,
+plt.scatter(S_F35, T_F35, color='m', marker='o', s=50,
             label=f'F-35 Lightning II (S={S_F35:.1f} ft², T={T_F35:.0f} lbf)')
-plt.scatter(S_DRM, T_DRM, color='r', marker='*', s=180,
+plt.scatter(S_DRM, T_DRM, color='g', marker='o', s=50,
             label=f'Rafale M (S={S_DRM:.1f} ft², T={T_DRM:.0f} lbf)')
-plt.scatter(S_F18, T_F18, color='b', marker='*', s=180,
+plt.scatter(S_F18, T_F18, color='b', marker='o', s=50,
             label=f'F-18 Super Hornet (S={S_F18:.0f} ft², T={T_F18:.0f} lbf)')
 
 # Our chosen design point 
-plt.scatter(S_Design, T_Design, color='g', marker='*', s=180,
+plt.scatter(S_Design, T_Design, color='r', marker='*', s=300,
             label=f'Our Design Point (S={S_Design:.0f} ft², T={T_Design:.0f} lbf)')
 
 # Formatting
