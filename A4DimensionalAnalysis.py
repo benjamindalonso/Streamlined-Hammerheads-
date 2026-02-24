@@ -29,9 +29,9 @@ Endurance = 0.333            # hr
 Ct = 0.889                   # specific fuel concumption lbm/(lbf hr) 
 V = 550                      # knots
 e = 0.8 # Oswald efficiency factor (typical value for fighters)
-HorizTailArea = 100
-VertTailArea = 81
-WetAreaFuse = 180
+HorizTailArea = 71
+VertTailArea = 62
+WetAreaFuse = 200
 NumberOfEngines = 1  # Example number of engines
 TurnRate = 0.139626 # in Rad/s based on rfp minimum of 8 deg/s
 TurnRate_10deg = 0.174533 # in Rad/s based on rfp minimum of 10 deg/s
@@ -45,7 +45,7 @@ MidMissionFuelFraction =  0.83 # Fuel fraction halfway through cruise portion of
 TakeoffFuelFraction = 0.99 # Fuel fraction from assignment2code
 ClimbFuelFraction = 0.96 # Fuel fraction from assignment2code
 ThrustReduction =  0.8 # Thrust reduction factor at cruise (due to altitude and speed)
-WingArea = 610
+WingArea = 548
 E = 0.333         # hr loiter
 CLmaxLanding = 2.0 # Maximum coefficient of lift (this will occur right at stall - max angle of attack)
 ROC = 200 # Rate of climb ft/min
@@ -195,10 +195,11 @@ W0, conv, it, hist = Weight_Inner_Loop(TOGW_Guess, WingArea,HorizTailArea, VertT
 plt.figure()
 plt.plot(hist, marker='o')
 plt.xlabel("Iteration")
-plt.ylabel("Takeoff Gross Weight W0")
+plt.ylabel("Takeoff Gross Weight W0 (lbf)")
 plt.title("TOGW Convergence")
 plt.grid(True)
 plt.show()
+print(W0)
 #--------------------------------------------------------------------------------
 
 
