@@ -23,7 +23,7 @@ Endurance = 0.333 # Loiter time in hours
 Ct = 0.889 # Thrust specific fuel consumption in lb/hr/lbf
 CruiseSpeed = 550 # Cruise speed in nm/hr
 WingAreaGrid = list(range(200, 1500, 30)) # Grid of wing areas to evaluate in ft^2
-ThrustGrid = list(range(20000,65000,100)) # Grid of thrust values to evaluate in lbf
+ThrustGrid = list(range(0,100000,100)) # Grid of thrust values to evaluate in lbf
 
 # Climb Constraint 
 Ks = 1.8 # Stall speed factor
