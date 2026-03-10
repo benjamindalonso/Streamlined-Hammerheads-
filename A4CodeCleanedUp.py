@@ -6,7 +6,7 @@ import math
 
 # Design Point
 T_Design = 43000 # lbf
-S_Design = 550 # ft^2
+S_Design = 600 # ft^2
 Clean_Cd0 = 0.00766
 
 # Weight Calculations
@@ -69,9 +69,16 @@ TakeoffFuelFraction = 0.99 # Fuel fraction from assignment2code
 ClimbFuelFraction = 0.96 # Fuel fraction from assignment2code
 ThrustReduction =  0.8 # Thrust reduction factor at cruise (due to altitude and speed)
 
+# Cruise Constraint
+Cruisefps = CruiseSpeed * 1.6878 # Cruise speed in feet per second
+q_cruise = 0.5 * rho_30k * (Cruisefps**2) 
+CruiseFuelFraction = TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction
+CruiseThrustReduction = 0.8 # Thrust reduction factor at cruise (due to altitude and speed)
 
-
-
+# Dash Constraint
+DashSpeed = 1150 # Dash speed in knots (Mach 2 at 30k ft)
+DashSpeedfps = DashSpeed * 1.6878 # Dash speed in feet per second
+q_dash = 0.5 * rho_30k * (DashSpeedfps**2)
 
 
 
@@ -369,9 +376,99 @@ T_Converged_Maneuver = outer_loop_maneuver_constraint(WingAreaGrid, TOGW_Guess, 
 # Run Maneuver Constraint Loop For 10 deg/s
 T_Converged_Maneuver10 = outer_loop_maneuver_constraint(WingAreaGrid, TOGW_Guess, t_0, TurnRate_10deg, tol_T_rel=1e-3, max_iter_T=60, relax=0.4)
     
+def cruise_TW_req_SLS(WingLoading_W0S, q_cruise, CD0_cruise,
+                      FuelFrac_cruise, ThrustReduction_cruise):
+    WS_cruise = WingLoading_W0S * FuelFrac_cruise
+    TW_alt = (q_cruise * CD0_cruise) / WS_cruise + (K * WS_cruise) / q_cruise
+    TW_SLS = TW_alt * (FuelFrac_cruise / ThrustReduction_cruise)
+    return TW_SLS
 
+# Cruise Constraint Loop
+def outer_loop_cruise_constraint(
+   WingAreaGrid,
+   TOGW_Guess,
+   t_0,
+   Clean_Cd0,    
+    q_cruise,
+    FuelFrac_cruise, 
+    ThrustReduction_cruise,
+    tol_T_rel=1e-3,
+    max_iter_T=60,
+    relax=0.4
+):
+    T_Converged_Cruise = []
 
+    for S_wing in WingAreaGrid:
 
+        for iter_outer in range(max_iter_T):
+
+            T_total = t_0 * number_of_engines  # Reset thrust for this wing area
+
+            W0, converged_inner, it_inner, _ = Weight_Inner_Loop(
+                TOGW_Guess,
+                S_wing,
+                horiz_tail_area,
+                vert_tail_area,
+                wet_area_fuse,
+                number_of_engines,
+                WeightCrew,
+                WeightPayload,
+                t_0
+            )
+
+            WS_W0 = W0 / S_wing  # W0/S
+
+            TW_req_SLS = cruise_TW_req_SLS(
+                WS_W0,
+                q_cruise,
+                Clean_Cd0,
+                CruiseFuelFraction,
+                CruiseThrustReduction
+            )
+
+            T_req = TW_req_SLS * W0
+
+            rel_error = abs(T_req - T_total) / max(abs(T_total), 1e-6)
+            if rel_error < tol_T_rel:
+                T_Converged_Cruise.append(T_req)
+                break
+
+            t_0 = (1 - relax) * t_0 + relax * T_req
+
+        else:
+            T_Converged_Cruise.append(T_req)
+
+    return np.array(T_Converged_Cruise)
+
+# runs cruise constraint
+
+T_Converged_Cruise = outer_loop_cruise_constraint(
+    WingAreaGrid,
+    TOGW_Guess,
+    t_0,
+    Clean_Cd0,   
+    q_cruise,
+    CruiseFuelFraction,
+    CruiseThrustReduction,
+    tol_T_rel=1e-3,
+    max_iter_T=60,
+    relax=0.4
+)
+
+# Runs Dash Constraint Using Cruise Loop With Different Input Data
+
+T_Converged_Dash = outer_loop_cruise_constraint(
+    WingAreaGrid,
+    TOGW_Guess,
+    t_0,
+    Clean_Cd0,   
+    q_dash,
+    CruiseFuelFraction,
+    CruiseThrustReduction,
+    tol_T_rel=1e-3,
+    max_iter_T=60,
+    relax=0.4
+)
 
 
 
@@ -431,6 +528,16 @@ plt.plot(WingAreaGrid, T_Converged_Maneuver,
 plt.plot(WingAreaGrid, T_Converged_Maneuver10,
          linestyle=':', linewidth=2.0, color='C2',
          label='Sustained Turn (10 deg/s desired @ 20k ft)')
+
+# Cruise constraint
+plt.plot(WingAreaGrid, T_Converged_Cruise,
+         linestyle='-', linewidth=2.0, color='C5',
+         label='Cruise (30k ft)')
+
+# Dash constraint
+plt.plot(WingAreaGrid, T_Converged_Dash,
+         linestyle='-', linewidth=2.0, color='C6',
+         label='Dash (Mach 2 @ 30k ft)')
 
 
 
