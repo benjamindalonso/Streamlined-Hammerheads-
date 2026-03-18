@@ -155,9 +155,11 @@ def Weight_Inner_Loop(TOGW_Guess, WingArea, HorizTailArea, VertTailArea, WetArea
         it += 1
 
     converged = (delta <= err)
+
     return TOGW_Guess, converged, it, np.array(W0_history)
 
 W0, conv, it, hist = Weight_Inner_Loop(TOGW_Guess, wing_area,horiz_tail_area, vert_tail_area,wet_area_fuse, number_of_engines, WeightCrew, WeightPayload, t_0)
+
 
 # Plots weight convergence
 print('Converged TOGW =', W0, 'lbf')
@@ -189,7 +191,7 @@ def outer_loop_climb_constraint(WingAreaGrid, TOGW_Guess, t_0, tol_T_rel=1e-3, m
         for iter_outer in range(max_iter_T):
             T0_per_engine = T_total / number_of_engines
             
-            W0, converged_inner, it_inner, _ = Weight_Inner_Loop(
+            W0, converged_inner, it_inner,_ = Weight_Inner_Loop(
                 TOGW_Guess,
                 S_wing,
                 horiz_tail_area,
