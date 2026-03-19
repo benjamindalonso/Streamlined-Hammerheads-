@@ -8,7 +8,7 @@ rho_30k = 0.000891 # slugs/ft^3
 CruiseSpeed = 550 
 Cruisefps = CruiseSpeed * 1.6878 
 q_cruise = 0.5 * rho_30k * (Cruisefps**2)
-W_design = 75000
+W_design = 58619
 
 S_ht = 77.27030 # ft^2
 S_Vt = 86.21542 # ft^2
@@ -31,8 +31,7 @@ D_e_ft = D_e / 12 # ft, equivalent diameter of engine exhaust
 
 
 
-W_Fuselage = .499*(W_design**(.35))*(n_ultamate**(.25))*(L_fuse**(.5))*(W_fuse**(.849))*(W_design**(.685))
-print(f"Fuselage Weight = {W_Fuselage:.2f} lbs")
+W_Fuselage = 24316.79
 W_Vt = .452*(((1+(Ht/Hv))**(.5))*((W_design*n_ultamate))**(.488)*(S_Vt**(.718)))*M**(.341)*Lt**(-1)*(1+Sr/S_Vt)**(.348)*ARv**(.223)*(1+Taper_Ratio)**(.25)*.805**(-.323) # lbs
 print(f"Vertical Tail Weight = {W_Vt:.2f} lbs")
 W_Ht = 3.316*(1+(Fw/Bh))**(-2)*((W_design*n_ultamate)/1000)**(.26)*(S_ht**(.806)) # lbs
@@ -42,3 +41,26 @@ print(f"Wing Weight = {W_wing:.2f} lbs")
 W_intake = 13.29*L_d**(.643)*(L_s/L_d)**(-.373)*D_e_ft 
 print(f"Intake Weight = {W_intake:.2f} lbs")
 W_Engine = 6422 # lbs
+W_ForwardTank = 3007
+W_MainTank = 15035.86   
+W_DropTank = 3007
+W_AIM9 = 380
+W_AIM120 = 696
+W_Avionics = 2500
+X_Intake = 24.776
+X_Engine = 40.576
+X_Vt = 44.849
+X_Ht = 18.476
+X_Wing = 31.505
+X_ForwardTank = 23.16
+X_MainTank = 37.500
+X_DropTank = 34.683
+X_AIM9 = 37.163
+X_120 = 38.67
+X_Avionics = 7.276
+X_Fuselage = 27.104
+
+X_Cg_Aircraft = ((W_Fuselage*X_Fuselage)+(W_Vt*X_Vt)+(W_Ht*X_Ht)+(W_wing*X_Wing)+(W_intake*X_Intake)+(W_Engine*X_Engine)+(W_ForwardTank*X_ForwardTank)+(W_MainTank*X_MainTank)+(W_DropTank*X_DropTank)+(W_AIM9*X_AIM9)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_Avionics*X_Avionics))/(W_design)
+X_Cg_Aircraft_NoFuelorArms = ((W_Fuselage*X_Fuselage)+(W_Vt*X_Vt)+(W_Ht*X_Ht)+(W_wing*X_Wing)+(W_intake*X_Intake)+(W_Engine*X_Engine)+(W_Avionics*X_Avionics))/(W_design)
+print(f"X_Cg_Aircraft = {X_Cg_Aircraft:.2f} ft")
+print(f"X_Cg_Aircraft_NoFuelorArms = {X_Cg_Aircraft_NoFuelorArms:.2f} ft")
