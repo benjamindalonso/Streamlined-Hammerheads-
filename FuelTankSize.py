@@ -1,9 +1,12 @@
 # Parameters
-FuelDensity = 6.7 # lbm/gal
+FuelDensity = 6.7 # lbf/gal
 AdditionalFuelBuffer = 0.15 # 15% additional fuel for safety
-FuelWeight = 19000 # lbf (from A4 code)
+FuelWeight = 13640 # lbf (from A4 code)
+
+# Calculate Fuel Volume and Add Safety Buffer
+RequiredFuelVolume = FuelWeight / FuelDensity
+RequiredFuelVolumeAdjusted = RequiredFuelVolume * (1 + AdditionalFuelBuffer)
 
 
 # Print Results
-print(f"Required Fuel Mass Without Safety Buffer: {RequiredFuel:.2f} lbm")
 print(f"Required Fuel Volume With Safety Buffer: {RequiredFuelVolumeAdjusted:.2f} gal")
