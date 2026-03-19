@@ -18,7 +18,7 @@ wet_area_fuse = 407 # ft^2
 number_of_engines = 1
 t_0 = 43000 # Initial thrust guess per engine in lbf 
 MaxLD = 13 # Maximum Lift to Drag Ratio
-Range = 2000 # Range in nautical miles
+Range = 1400 # Range in nautical miles
 Endurance = 0.333 # Loiter time in hours
 Ct = 0.889 # Thrust specific fuel consumption in lb/hr/lbf
 CruiseSpeed = 550 # Cruise speed in nm/hr
@@ -155,7 +155,7 @@ def Weight_Inner_Loop(TOGW_Guess, WingArea, HorizTailArea, VertTailArea, WetArea
         it += 1
 
     converged = (delta <= err)
-
+    print(FuelWeight)
     return TOGW_Guess, converged, it, np.array(W0_history)
 
 W0, conv, it, hist = Weight_Inner_Loop(TOGW_Guess, wing_area,horiz_tail_area, vert_tail_area,wet_area_fuse, number_of_engines, WeightCrew, WeightPayload, t_0)
