@@ -60,7 +60,7 @@ X_120 = 38.67
 X_Avionics = 7.276
 X_Fuselage = 27.104
 
-X_Cg_Aircraft = ((W_Fuselage*X_Fuselage)+(W_Vt*X_Vt)+(W_Ht*X_Ht)+(W_wing*X_Wing)+(W_intake*X_Intake)+(W_Engine*X_Engine)+(W_ForwardTank*X_ForwardTank)+(W_MainTank*X_MainTank)+(W_DropTank*X_DropTank)+(W_AIM9*X_AIM9)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_Avionics*X_Avionics))/(W_design)
-X_Cg_Aircraft_NoFuelorArms = ((W_Fuselage*X_Fuselage)+(W_Vt*X_Vt)+(W_Ht*X_Ht)+(W_wing*X_Wing)+(W_intake*X_Intake)+(W_Engine*X_Engine)+(W_Avionics*X_Avionics))/(W_design)
+X_Cg_Aircraft = ((W_Fuselage*X_Fuselage)+(W_Vt*X_Vt)+(W_Ht*X_Ht)+(W_wing*X_Wing)+(W_intake*X_Intake)+(W_Engine*X_Engine)+(W_ForwardTank*X_ForwardTank)+(W_MainTank*X_MainTank)+(W_DropTank*X_DropTank)+(W_AIM9*X_AIM9)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_Avionics*X_Avionics))/((W_Fuselage)+(W_Vt)+(W_Ht)+(W_wing)+(W_intake)+(W_Engine)+(W_ForwardTank)+(W_MainTank)+(W_DropTank)+(W_AIM9)+(W_AIM120)+(W_AIM120)+(W_AIM120)+(W_Avionics))
+X_Cg_Aircraft_NoFuelorArms = ((W_Fuselage*X_Fuselage)+(W_Vt*X_Vt)+(W_Ht*X_Ht)+(W_wing*X_Wing)+(W_intake*X_Intake)+(W_Engine*X_Engine)+(W_Avionics*X_Avionics))/((W_Fuselage)+(W_Vt)+(W_Ht)+(W_wing)+(W_intake)+(W_Engine)+(W_Avionics))
 print(f"X_Cg_Aircraft = {X_Cg_Aircraft:.2f} ft")
 print(f"X_Cg_Aircraft_NoFuelorArms = {X_Cg_Aircraft_NoFuelorArms:.2f} ft")
