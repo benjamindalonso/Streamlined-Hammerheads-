@@ -11,6 +11,7 @@ MAC = 17.07               # Mean Aerodynamic Chord (ft)
 
 Sh = 68.93                # Horizontal tail area (ft^2)
 Htail_arm = 15.29         # Distance from CG to horizontal tail (ft)
+Vtail_arm = 10.88
 
 Sv = 86.22                # Vertical tail area (ft^2)
 
@@ -18,14 +19,14 @@ Fuselage_length = 50      # Fuselage length (ft)
 Max_Fuselage_width = 11.82
 
 CG_Location = 29.19       # From nose (ft)
-Wing_25_MAC_along_CRL = 4.27  # From nose (ft)
+Wing_25_MAC_along_CRL = 28.63  # From nose (ft)
 
 # =========================================================
 # TAIL VOLUME COEFFICIENTS
 # =========================================================
 
 Cht = (Sh * Htail_arm) / (S * MAC)
-Cvt = (Sv * Htail_arm) / (S * b)
+Cvt = (Sv * Vtail_arm) / (S * b)
 
 print("\n================ STABILITY ANALYSIS ================")
 print("Horizontal Tail Volume Coefficient (Cht):", round(Cht,4))
@@ -36,7 +37,7 @@ print("Vertical Tail Volume Coefficient (Cvt):", round(Cvt,4))
 # =========================================================
 
 AR_w = b**2 / S
-b_h = 20  # <-- Replace with actual horizontal tail span (ft)
+b_h = 13.53  # <-- Replace with actual horizontal tail span (ft)
 AR_h = b_h**2 / Sh
 
 print("\nWing Aspect Ratio (AR_w):", round(AR_w,3))
@@ -48,7 +49,7 @@ print("Horizontal Tail Aspect Ratio (AR_h):", round(AR_h,3))
 
 eta = 0.97
 M = 0.85
-Lambda = 0
+Lambda = 38.5 * (math.pi / 180)  # Convert 38.5 degrees to radians
 
 a_w_exact = (2 * math.pi * AR_w) / (
     2 + math.sqrt(((AR_w/eta)**2) * (1 + math.tan(Lambda)**2 - M**2) + 4)
@@ -94,7 +95,7 @@ print("Effective Tail Lift Curve Slope (per rad):", round(a_h_effective,3))
 # NEUTRAL POINT
 # =========================================================
 
-hn = 0.25 + (a_h_effective / a_w_exact) * Cht - dCm_dCL_fus
+hn = 0.25 - (a_h_effective / a_w_exact) * Cht - dCm_dCL_fus
 
 print("\nNeutral Point (fraction of MAC):", round(hn,4))
 print("Neutral Point (% MAC):", round(hn*100,2))
