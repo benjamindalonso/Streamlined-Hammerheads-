@@ -87,6 +87,8 @@ X_AIM9 = 37.163
 X_120 = 38.67
 X_Avionics = 7.276
 X_Fuselage = 27.104
+X_nose_landing_gear = 15.853  # Estimated location of nose landing gear CG from nose (ft)
+X_main_landing_gear = 40.164  # Estimated location of main landing gear
 
 
 
@@ -125,7 +127,7 @@ W_nose_landing_gear = (W_l * N_l)**0.290 * L_n**0.5 * N_nw**0.525
 W_air_induction = (13.29 * K_vg * L_d**0.643 * K_d**0.182 * 
                    N_en**1.498 * (L_s / L_d)**(-0.373) * D_e)
 
-X_Cg_Aircraft = ((W_fuselage*X_Fuselage)+(W_vertical_tail*X_Vt)+(W_horizontal_tail*X_Ht)+(W_wing*X_Wing)+(W_air_induction*X_Intake)+(W_Engine*X_Engine)+(W_ForwardTank*X_ForwardTank)+(W_MainTank*X_MainTank)+(W_DropTank*X_DropTank)+(W_AIM9*X_AIM9)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_Avionics*X_Avionics))/((W_fuselage)+(W_vertical_tail)+(W_horizontal_tail)+(W_wing)+(W_air_induction)+(W_Engine)+(W_ForwardTank)+(W_MainTank)+(W_DropTank)+(W_AIM9)+(W_AIM120)+(W_AIM120)+(W_AIM120)+(W_Avionics))
+X_Cg_Aircraft = ((W_fuselage*X_Fuselage)+(W_vertical_tail*X_Vt)+(W_horizontal_tail*X_Ht)+(W_wing*X_Wing)+(W_air_induction*X_Intake)+(W_Engine*X_Engine)+(W_ForwardTank*X_ForwardTank)+(W_MainTank*X_MainTank)+(W_DropTank*X_DropTank)+(W_AIM9*X_AIM9)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_Avionics*X_Avionics)+(W_nose_landing_gear * X_nose_landing_gear)+(W_main_landing_gear * X_main_landing_gear))/((W_fuselage)+(W_vertical_tail)+(W_horizontal_tail)+(W_wing)+(W_air_induction)+(W_Engine)+(W_ForwardTank)+(W_MainTank)+(W_DropTank)+(W_AIM9)+(W_AIM120)+(W_AIM120)+(W_AIM120)+(W_Avionics)+(W_nose_landing_gear)+(W_main_landing_gear))
 X_Cg_Aircraft_NoFuelorArms = ((W_fuselage*X_Fuselage)+(W_vertical_tail*X_Vt)+(W_horizontal_tail*X_Ht)+(W_wing*X_Wing)+(W_air_induction*X_Intake)+(W_Engine*X_Engine)+(W_Avionics*X_Avionics))/((W_fuselage)+(W_vertical_tail)+(W_horizontal_tail)+(W_wing)+(W_air_induction)+(W_Engine)+(W_Avionics))
 
 
