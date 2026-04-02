@@ -44,6 +44,7 @@ K_rht     = 1.0         # Vertical tail weight correction factor (usually 1.0)
 L_fuse    = 49.5        # Fuselage length (ft) - you had 49.5 earlier
 D_fuse    = 11.41728    # Fuselage maximum diameter or equivalent width (ft) 
 K_dwf     = 1.0         # Fuselage weight correction factor (usually 1.0)
+W = 13.5                # Fuselage structural width (widest point) in feet
 
 # Landing gear parameters
 W_l       = 58619.0     # Landing weight 
@@ -115,7 +116,7 @@ W_vertical_tail = (0.452 * K_rht * (1 + H_t / H_v)**0.5 *
 
 # 15.4 Fuselage Weight
 W_fuselage = (0.499 * K_dwf * W_dg**0.35 * N_z**0.25 * L_fuse**0.5 *
-              D_fuse**0.849 * W_dg**0.685)
+              D_fuse**0.849 * W**0.685)
 
 # 15.5 Main Landing Gear Weight
 W_main_landing_gear = K_cb * K_tpg * (W_l * N_l)**0.25 * L_m**0.973
