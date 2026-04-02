@@ -1,3 +1,5 @@
+# Check page 605 of Raymers textbook for specific weight relations for fighter jets
+
 S_Design = 600 # ft^2
 n_ultamate = 8 # Ultimate load factor
 ARw = 2.028
