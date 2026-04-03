@@ -19,8 +19,8 @@ Lambda_w   = 38.0       # Wing sweep angle (degrees)
 taper_ratio = 0.24      # Wing taper ratio (λ)
 K_dw       = 1.0        # Wing weight factor for Delta Wing (Page 610 Raymer)
 K_vs       = 1.0        # Variable sweep factor (1.0 for fixed sweep Page 610 Raymer))
-quarterMAC = 22.07215   # Distance from nose to quarter MAC on main wing in feet
-MAC = 21.48           # Mean Aerodynamic Chord (ft) 
+quarterMAC = 21.54008   # Distance from nose to quarter MAC on main wing in feet
+MAC = 19.35           # Mean Aerodynamic Chord (ft) 
 Span = 34.8          # Wing span (ft)   
 
 # Horizontal tail parameters
@@ -29,7 +29,7 @@ F_w       = 6.361        # Fuselage width at Canard intersection (ft)
 B_h       = 22.972    # Horizontal tail span (ft)
 
 # Vertical tail parameters
-quarterMACTail = 41.518 # Distance from nose to quarter MAC on tail in feet
+quarterMACTail = 38.7313 # Distance from nose to quarter MAC on tail in feet
 S_vt      = 86.21542    # Vertical tail area (ft²)
 A_vt      = 2.88328     # Vertical tail aspect ratio
 H_t       = 0.001       # Horizontal tail height above fuselage reference line (ft) (Page 610 Raymers 1.0 for T tail, 0 for conventional tail)
@@ -41,7 +41,7 @@ K_rht     = 1.0         # Vertical tail weight correction factor (usually 1.0)
 
 
 # Fuselage parameters
-L_fuse    = 49.5        # Fuselage length (ft) - you had 49.5 earlier
+L_fuse    = 47.78        # Fuselage length (ft) - you had 49.5 earlier
 D_fuse    = 11.41728    # Fuselage maximum diameter or equivalent width (ft) 
 K_dwf     = 1.0         # Fuselage weight correction factor (usually 1.0)
 W = 13.5                # Fuselage structural width (widest point) in feet
