@@ -131,9 +131,25 @@ W_air_induction = (13.29 * K_vg * L_d**0.643 * K_d**0.182 *
 X_Cg_Aircraft = ((W_fuselage*X_Fuselage)+(W_vertical_tail*X_Vt)+(W_horizontal_tail*X_Ht)+(W_wing*X_Wing)+(W_air_induction*X_Intake)+(W_Engine*X_Engine)+(W_ForwardTank*X_ForwardTank)+(W_MainTank*X_MainTank)+(W_DropTank*X_DropTank)+(W_AIM9*X_AIM9)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_AIM120*X_120)+(W_Avionics*X_Avionics)+(W_nose_landing_gear * X_nose_landing_gear)+(W_main_landing_gear * X_main_landing_gear))/((W_fuselage)+(W_vertical_tail)+(W_horizontal_tail)+(W_wing)+(W_air_induction)+(W_Engine)+(W_ForwardTank)+(W_MainTank)+(W_DropTank)+(W_AIM9)+(W_AIM120)+(W_AIM120)+(W_AIM120)+(W_Avionics)+(W_nose_landing_gear)+(W_main_landing_gear))
 X_Cg_Aircraft_NoFuelorArms = ((W_fuselage*X_Fuselage)+(W_vertical_tail*X_Vt)+(W_horizontal_tail*X_Ht)+(W_wing*X_Wing)+(W_air_induction*X_Intake)+(W_Engine*X_Engine)+(W_Avionics*X_Avionics))/((W_fuselage)+(W_vertical_tail)+(W_horizontal_tail)+(W_wing)+(W_air_induction)+(W_Engine)+(W_Avionics))
 
+# Fuel Fraction Variables
+TSFC = .889 # Thrust specific fuel consumption in lb/lbf/hr (Assumed value for a modern fighter engine at cruise)
+TSFC_SeaLevel = .3 # Thrust specific fuel consumption at sea level in lbm/lbf/hr (Assumed value for a modern fighter engine at sea level)
+TSFC_Loiter = .7 # Thrust specific fuel consumption during loiter in lb/lbf/hr (Assumed value for a modern fighter engine during loiter)
+TSFC_Cruise = .8 # Thrust specific fuel consumption during cruise in lb/lbf/hr (Assumed value for a modern fighter engine during cruise)
+T_Max = 43000 # Maximum thrust in pounds (Assumed value for a modern fighter engine)
+T_Idle = .05 * T_Max # Idle thrust in pounds (Assumed to be 5% of max thrust)
+t_Idle = 15 # Time spent Idle in minutes (Assumed value for startup and taxi)
+t_Idle_Hours = t_Idle / 60 # Time spent Idle in hours
+t_Takeoff = 1 # Time spent in takeoff in minutes (Assumed value for takeoff roll and initial climb)
+t_Takeoff_Hours = t_Takeoff / 60 # Time spent in takeoff in hours
+Max_L_D = 13 # Maximum lift-to-drag ratio for the aircraft (Assumed value for a modern fighter)
+E = 20 # Loiter time in minutes (Assumed value for a modern fighter)
+t_Loiter_Hours = E / 60 # Time spent in loiter in hours
+# Fuel Fractions
 
-
-
+StartUp_and_Taxi = 1 - (t_Idle_Hours * TSFC_SeaLevel * (T_Idle / W_dg)) # Fuel fraction for startup and taxi
+Takeoff = 1 - (t_Takeoff_Hours * TSFC * (T_Max / W_dg))
+Loiter = math.exp((-t_Loiter_Hours * TSFC_Loiter) / Max_L_D) # Fuel fraction for loiter
 
 
 # ==========================
@@ -156,3 +172,6 @@ total_emptyish = (W_wing + W_horizontal_tail + W_vertical_tail + W_fuselage +
                   W_main_landing_gear + W_nose_landing_gear + W_air_induction)
 
 print(f"\nSum of these components = {total_emptyish:.1f} lbs")
+print (f"Startup & Taxi Fuel Fraction = {StartUp_and_Taxi:.4f}")
+print (f"Takeoff Fuel Fraction = {Takeoff:.4f}")
+print (f"Loiter Fuel Fraction = {Loiter:.4f}")
