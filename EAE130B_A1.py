@@ -13,7 +13,7 @@ n_braked_wheels = 2
 
 brake_time = 25 # How many seconds brakes are applied (this guess needs to be refined/sourced properly)
 
-V = 140             
+V = 130 # Stall speed in knots             
 a_brake = 10       
 
 # geometry
