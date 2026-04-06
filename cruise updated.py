@@ -149,3 +149,23 @@ def density_to_altitude(rho):
 
 # Convert required_densities array to altitudes
 altitudes = [density_to_altitude(rho) for rho in required_densities]
+
+# Altitude Plot
+plt.figure(figsize=(9, 6))
+plt.plot(final_ranges, altitudes, color='darkmagenta', linewidth=2, label='Cruise Climb Path')
+
+plt.axhline(y=altitudes[0], color='gray', linestyle='--', alpha=0.6, label=f'Start: {altitudes[0]:.0f} ft')
+plt.axhline(y=altitudes[-1], color='gray', linestyle='--', alpha=0.6, label=f'End: {altitudes[-1]:.0f} ft')
+
+plt.title('Altitude Profile for Optimal Cruise Climb at $(L/D)_{max}$', fontsize=14)
+plt.xlabel('Range [nmi]', fontsize=12)
+plt.ylabel('Altitude [ft]', fontsize=12)
+plt.grid(True, linestyle=':', alpha=0.7)
+plt.legend(loc='upper left', fontsize=10)
+plt.tight_layout()
+plt.show()
+
+print(f"\n--- Altitude Analysis ---")
+print(f"Optimal Start Altitude: {altitudes[0]:.0f} ft")
+print(f"Optimal End Altitude:   {altitudes[-1]:.0f} ft")
+print(f"Total Altitude Gain:    {altitudes[-1] - altitudes[0]:.0f} ft")
