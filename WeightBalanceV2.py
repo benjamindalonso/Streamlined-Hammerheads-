@@ -26,6 +26,7 @@ K_mc      = 1.45        # mission completion mulitplier for electrical systems
 R_kva     = 110         # Voltage rating for aircraft (kV)
 L_a       = 27          # dist. of generators -> avionics -> cockpit (ft)
 N_gen     = 3           # number of generators on engine
+TSFC      = .889        # Thrust specific fuel consumption in lb/lbf/hr (Assumed value for a modern fighter engine at cruise)
 
 # Wing parameters
 S_w       = 600.0       # Wing reference area (ft²)
@@ -74,10 +75,16 @@ K_tpg     = 1.0         # Usually 1 (page 610 Raymer)
 # Air Induction System (Intake) parameters - NEW
 L_d       = 8.16429     # Length of diffuser / air induction system (ft)
 L_s       = 2           # Length of straight intake duct (ft)
-D_e       = 3.583        # Engine diameter (feet)
+D_e       = 3.583       # Engine diameter (feet)
 N_en      = 1           # Number of engines
 K_vg      = 1.0         # Variable geometry intake factor (1.0 for fixed geometry)
 K_d       = 1.0         # Duct type / design factor (1.0 for our case)
+
+# Fuel system parameters
+N_t = 5                 # number of fuel tanks
+V_t = 420               # total fuel volume (ft^2)
+V_i = 0                 # integral tank volume
+V_p = V_t               # volume self sealing tanks (We're assuming none of the tanks are integrated into stucture, for now)
 
 # Control Surfaces
 S_csw     =   ((0.3 * MAC) * (0.175 * Span)) + ((0.4 * MAC) * (0.175 * Span))      # Control surface area includes flaps (wing mounted) 
@@ -118,6 +125,7 @@ X_electrical = 24 # assumed to be near middle of fuselage
 X_furnishings = 12.244 # CG of seat
 X_AC = 24 # CG of airconditioning and anti ice (assumed to be near middle of fuselage)
 X_handling_gear = 24 # CG assumed to be near middle of fuselage
+X_fuel_system_and_tanks = 32.939 # Assumed to be at CG of fuel CG
 
 X_positions = np.append(X_positions,[X_Engine,X_ForwardTank,X_MainTank,X_DropTank,X_AIM9,X_120,X_Avionics])
 
@@ -207,6 +215,12 @@ weights = np.append(weights,W_engine_controls)
 weights_empty = np.append(weights_empty,W_engine_controls)
 X_positions = np.append(X_positions,X_engine_controls) # Assume CG at front of engine
 
+# 15.16 Fuel Systems and Tanks
+W_fuel_system_and_tanks = 7.45*(V_t**0.47)*((1+V_i/V_t)**-0.095)*(1+V_p/V_t)*(N_t**0.06)*N_en*(((thrust*TSFC)/1000)**0.249)
+weights = np.append(weights,W_fuel_system_and_tanks)
+weights_empty = np.append(weights_empty,W_fuel_system_and_tanks)
+X_positions = np.append(X_positions,X_fuel_system_and_tanks)
+
 # 15.17 Flight Controls
 W_flight_controls = 36.28*(M**0.003)*(S_csw**0.489)*(N_s**0.484)*(N_c**0.127)
 weights = np.append(weights,W_flight_controls)
@@ -247,7 +261,7 @@ X_Cg_Aircraft = np.sum(np.multiply(X_positions,weights))/np.sum(weights)
 X_Cg_Aircraft_NoFuelorArms = np.sum(np.multiply(X_positions,weights_empty))/np.sum(weights_empty)
 
 # Fuel Fraction Variables
-TSFC = .889 # Thrust specific fuel consumption in lb/lbf/hr (Assumed value for a modern fighter engine at cruise)
+TSFC = .889 # Thrust specific fuel consumption in lb/lbf/hr (Assumed value for a modern fighter engine at cruise) Also defined on line 29
 TSFC_SeaLevel = .3 # Thrust specific fuel consumption at sea level in lbm/lbf/hr (Assumed value for a modern fighter engine at sea level)
 TSFC_Loiter = .7 # Thrust specific fuel consumption during loiter in lb/lbf/hr (Assumed value for a modern fighter engine during loiter)
 TSFC_Cruise = .8 # Thrust specific fuel consumption during cruise in lb/lbf/hr (Assumed value for a modern fighter engine during cruise)
