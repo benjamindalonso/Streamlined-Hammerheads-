@@ -47,7 +47,7 @@ B_h       = 22.972    # Horizontal tail span (ft)
 
 # Vertical tail parameters
 quarterMACTail = 38.7313 # Distance from nose to quarter MAC on tail in feet
-S_vt      = 86.21542    # Vertical tail area (ft²)
+S_vt      = 43.10771   # Vertical tail area (ft²) (for only one)
 A_vt      = 2.88328     # Vertical tail aspect ratio
 H_t       = 0.001       # Horizontal tail height above fuselage reference line (ft) (Page 610 Raymers 1.0 for T tail, 0 for conventional tail)
 H_v       = 0.001      # Vertical tail height above fuselage reference line (ft) (Page 610 Raymers 1.0 for T tail, 0 for conventional tail)
@@ -158,10 +158,10 @@ weights_empty = np.append(weights_empty,W_horizontal_tail)
 X_positions = np.append(X_positions,X_Ht)
 
 # 15.3 Vertical Tail Weight
-W_vertical_tail = (0.452 * K_rht * (1 + H_t / H_v)**0.5 *
+W_vertical_tail = 2*(0.452 * K_rht * (1 + H_t / H_v)**0.5 *
                    (W_dg * N_z)**0.488 * S_vt**0.718 * M**0.341 *
                    L_t**(-1.0) * (1 + S_r_over_S_vt)**0.348 * A_vt**0.223 *
-                   (1 + taper_ratio)**0.25 * (math.cos(math.radians(Lambda_vt)))**(-0.323))
+                   (1 + taper_ratio)**0.25 * (math.cos(math.radians(Lambda_vt)))**(-0.323)) # 15.3 multiplied by two for the two vert tails
 weights = np.append(weights,W_vertical_tail)
 weights_empty = np.append(weights_empty,W_vertical_tail)
 X_positions = np.append(X_positions,X_Vt)
@@ -304,20 +304,23 @@ print(f"Engine Section Weight    = {W_engine_section:.2f} lbs")
 print(f"Air Induction System     = {W_air_induction:.2f} lbs")   # Added
 print(f"Oil Colling              = {W_oil_cooling:.2f} lbs")
 print(f"Engine Controls          = {W_engine_controls:.2f} lbs")
+print(f"Fuel System and Tanks    = {W_fuel_system_and_tanks:.2f} lbs")
 print(f"Flight Controls          = {W_flight_controls:.2f} lbs")
 print(f"Hydraulics               = {W_hydraulics:.2f} lbs")
 print(f"Electrical               = {W_electrical:.2f} lbs")
 print(f"Furnishings              = {W_furinishings:.2f} lbs")
 print(f"AC and Anti-ice          = {W_AC:.2f} lbs")
 print(f"Handling Gear            = {W_handling_gear:.2f} lbs")
-print(f"X_Cg_Aircraft = {X_Cg_Aircraft:.2f} ft")
+print(f"X_Cg_Aircraft            = {X_Cg_Aircraft:.2f} ft")
 print(f"X_Cg_Aircraft_NoFuelorArms = {X_Cg_Aircraft_NoFuelorArms:.2f} ft")
 
 
 
 total_emptyish = np.sum(weights_empty)
+total_weight = np.sum(weights)
 
 print(f"\nSum of these components = {total_emptyish:.1f} lbs")
-print (f"Startup & Taxi Fuel Fraction = {StartUp_and_Taxi:.4f}")
+print(f"GTOW                    = {total_weight:.2f} lbs")
+print (f"\nStartup & Taxi Fuel Fraction = {StartUp_and_Taxi:.4f}")
 print (f"Takeoff Fuel Fraction = {Takeoff:.4f}")
 print (f"Loiter Fuel Fraction = {Loiter:.4f}")
