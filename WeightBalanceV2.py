@@ -102,20 +102,20 @@ weights = np.append(weights,[W_Engine,W_ForwardTank,W_MainTank,W_DropTank,3*W_AI
 weights_empty = np.append(weights_empty,[W_Engine,0,0,0,0,0,W_Avionics])
 
 # Locations of component CGs from nose in feet
-X_Intake = 24.776
-X_Engine = 40.576
-X_Vt = 44.849
-X_Ht = 18.476
-X_Wing = 31.505
-X_ForwardTank = 23.16
-X_MainTank = 37.500
-X_DropTank = 34.683
-X_AIM9 = 37.163
-X_120 = 38.67
-X_Avionics = 7.276
+X_Intake = 21.265
+X_Engine = 34.337
+X_Vt = 44.026
+X_Ht = 19.132
+X_Wing = 34.868
+X_ForwardTank = 19.918
+X_MainTank = 35.861
+X_DropTank = 30.992
+X_AIM9 = 41.010
+X_120 = 37.746
+X_Avionics = 7.277
 X_Fuselage = 27.104
-X_nose_landing_gear = 15.853  # Estimated location of nose landing gear CG from nose (ft)
-X_main_landing_gear = 40.164  # Estimated location of main landing gear
+X_nose_landing_gear = 14.648  # Estimated location of nose landing gear CG from nose (ft)
+X_main_landing_gear = 33.361  # Estimated location of main landing gear
 
 X_firewall = 15 # between cockpit and forward fuel tank
 X_engine_controls = 25.754 # assumed to be at front of engine
