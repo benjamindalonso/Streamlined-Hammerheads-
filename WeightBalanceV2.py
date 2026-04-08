@@ -97,6 +97,7 @@ W_DropTank = 3007
 W_AIM9 = 380
 W_AIM120 = 696
 W_Avionics = 2500
+W_APU = 75 # lbs (based on honeywell micropower unit)
 
 weights = np.append(weights,[W_Engine,W_ForwardTank,W_MainTank,W_DropTank,3*W_AIM9,W_AIM120,W_Avionics])
 weights_empty = np.append(weights_empty,[W_Engine,0,0,0,0,0,W_Avionics])
@@ -127,6 +128,7 @@ X_AC = 24 # CG of airconditioning and anti ice (assumed to be near middle of fus
 X_handling_gear = 24 # CG assumed to be near middle of fuselage
 X_fuel_system_and_tanks = 32.939 # Assumed to be at CG of fuel CG
 X_pilot = 14.211
+X_APU = 24 # assumed to have a CG near middle of fuselage
 
 X_positions = np.append(X_positions,[X_Engine,X_ForwardTank,X_MainTank,X_DropTank,X_AIM9,X_120,X_Avionics])
 
@@ -264,6 +266,12 @@ weights = np.append(weights,W_handling_gear)
 weights_empty = np.append(weights_empty,W_handling_gear)
 X_positions = np.append(X_positions,X_handling_gear)
 
+# 15.36 APU
+W_APU_total = 2.2*W_APU
+weights = np.append(weights,W_APU_total)
+weights_empty = np.append(weights_empty,W_APU_total)
+X_positions = np.append(X_positions,X_APU)
+
 X_Cg_Aircraft = np.sum(np.multiply(X_positions,weights))/np.sum(weights)
 X_Cg_Aircraft_NoFuelorArms = np.sum(np.multiply(X_positions,weights_empty))/np.sum(weights_empty)
 
@@ -311,6 +319,7 @@ print(f"Electrical               = {W_electrical:.2f} lbs")
 print(f"Furnishings              = {W_furinishings:.2f} lbs")
 print(f"AC and Anti-ice          = {W_AC:.2f} lbs")
 print(f"Handling Gear            = {W_handling_gear:.2f} lbs")
+print(f"APU                      = {W_APU_total:.2f} lbs")
 print(f"X_Cg_Aircraft            = {X_Cg_Aircraft:.2f} ft")
 print(f"X_Cg_Aircraft_NoFuelorArms = {X_Cg_Aircraft_NoFuelorArms:.2f} ft")
 
