@@ -126,6 +126,7 @@ X_furnishings = 12.244 # CG of seat
 X_AC = 24 # CG of airconditioning and anti ice (assumed to be near middle of fuselage)
 X_handling_gear = 24 # CG assumed to be near middle of fuselage
 X_fuel_system_and_tanks = 32.939 # Assumed to be at CG of fuel CG
+X_pilot = 14.211
 
 X_positions = np.append(X_positions,[X_Engine,X_ForwardTank,X_MainTank,X_DropTank,X_AIM9,X_120,X_Avionics])
 
@@ -134,6 +135,12 @@ X_positions = np.append(X_positions,[X_Engine,X_ForwardTank,X_MainTank,X_DropTan
 # ==========================
 
 import math
+
+# Pilot and gear
+W_pilot = 250
+weights = np.append(weights,W_pilot)
+weights_empty = np.append(weights_empty,W_pilot)
+X_positions = np.append(X_positions,X_pilot)
 
 # 15.1 Wing Weight
 W_wing = (0.0103 * K_dw * K_vs * (W_dg * N_z)**0.5 * S_w**0.622 * AR_w**0.785 *
@@ -219,7 +226,7 @@ X_positions = np.append(X_positions,X_engine_controls) # Assume CG at front of e
 W_fuel_system_and_tanks = 7.45*(V_t**0.47)*((1+V_i/V_t)**-0.095)*(1+V_p/V_t)*(N_t**0.06)*N_en*(((thrust*TSFC)/1000)**0.249)
 weights = np.append(weights,W_fuel_system_and_tanks)
 weights_empty = np.append(weights_empty,W_fuel_system_and_tanks)
-X_positions = np.append(X_positions,X_fuel_system_and_tanks)
+X_positions = np.append(X_positions,X_fuel_system_and_tanks) # Assumed to be at CG of fuel stores
 
 # 15.17 Flight Controls
 W_flight_controls = 36.28*(M**0.003)*(S_csw**0.489)*(N_s**0.484)*(N_c**0.127)
