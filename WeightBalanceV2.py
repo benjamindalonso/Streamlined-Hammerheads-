@@ -2,6 +2,7 @@
 Aircraft Component Weight Estimation (Raymer Equations)
 """
 import numpy as np
+import pandas as pd
 
 # ==========================
 # INPUT PARAMETERS
@@ -11,6 +12,7 @@ import numpy as np
 weights = np.array([])
 weights_empty = np.array([])
 X_positions = np.array([])
+partNames = np.array([])
 
 # General aircraft parameters
 W_dg      = 58619.0     # Design gross weight (lbs)
@@ -101,6 +103,7 @@ W_APU = 75 # lbs (based on honeywell micropower unit)
 
 weights = np.append(weights,[W_Engine,W_ForwardTank,W_MainTank,W_DropTank,3*W_AIM9,W_AIM120,W_Avionics])
 weights_empty = np.append(weights_empty,[W_Engine,0,0,0,0,0,W_Avionics])
+partNames = np.append(partNames,['Engine','Forward Tank','Main Tank','Drop Tank','AIM9','AIM120','Avionics'])
 
 # Locations of component CGs from nose in feet
 X_Intake = 21.265
@@ -118,7 +121,7 @@ X_Fuselage = 27.104
 X_nose_landing_gear = 14.648  # Estimated location of nose landing gear CG from nose (ft)
 X_main_landing_gear = 33.361  # Estimated location of main landing gear
 
-X_firewall = 15 # between cockpit and forward fuel tank
+X_firewall = 14.9 # between cockpit and forward fuel tank
 X_engine_controls = 25.754 # assumed to be at front of engine
 X_flight_controls = 24 # assumed to be near middle of fuselage
 X_hydraulics = 24 # assumed to be near middle of fuselage
@@ -143,6 +146,7 @@ W_pilot = 250
 weights = np.append(weights,W_pilot)
 weights_empty = np.append(weights_empty,W_pilot)
 X_positions = np.append(X_positions,X_pilot)
+partNames = np.append(partNames,'Pilot and Gear')
 
 # 15.1 Wing Weight
 W_wing = (0.0103 * K_dw * K_vs * (W_dg * N_z)**0.5 * S_w**0.622 * AR_w**0.785 *
@@ -151,6 +155,7 @@ W_wing = (0.0103 * K_dw * K_vs * (W_dg * N_z)**0.5 * S_w**0.622 * AR_w**0.785 *
 weights = np.append(weights,W_wing) # adds weight value to array
 weights_empty = np.append(weights_empty,W_wing)
 X_positions = np.append(X_positions,X_Wing)
+partNames = np.append(partNames,'Wings')
 
 # 15.2 Horizontal Tail Weight
 W_horizontal_tail = (3.316 * (1 + F_w / B_h)**(-2.0) *
@@ -158,6 +163,7 @@ W_horizontal_tail = (3.316 * (1 + F_w / B_h)**(-2.0) *
 weights = np.append(weights,W_horizontal_tail)
 weights_empty = np.append(weights_empty,W_horizontal_tail)
 X_positions = np.append(X_positions,X_Ht)
+partNames = np.append(partNames,'Horizontail Stabilizer')
 
 # 15.3 Vertical Tail Weight
 W_vertical_tail = 2*(0.452 * K_rht * (1 + H_t / H_v)**0.5 *
@@ -167,6 +173,7 @@ W_vertical_tail = 2*(0.452 * K_rht * (1 + H_t / H_v)**0.5 *
 weights = np.append(weights,W_vertical_tail)
 weights_empty = np.append(weights_empty,W_vertical_tail)
 X_positions = np.append(X_positions,X_Vt)
+partNames = np.append(partNames,'Vertical Stablizer')
 
 # 15.4 Fuselage Weight
 W_fuselage = (0.499 * K_dwf * W_dg**0.35 * N_z**0.25 * L_fuse**0.5 *
@@ -174,36 +181,42 @@ W_fuselage = (0.499 * K_dwf * W_dg**0.35 * N_z**0.25 * L_fuse**0.5 *
 weights = np.append(weights,W_fuselage)
 weights_empty = np.append(weights_empty,W_fuselage)
 X_positions = np.append(X_positions,X_Fuselage)
+partNames = np.append(partNames,'Fuselage')
 
 # 15.5 Main Landing Gear Weight
 W_main_landing_gear = K_cb * K_tpg * (W_l * N_l)**0.25 * L_m**0.973
 weights = np.append(weights,W_main_landing_gear)
 weights_empty = np.append(weights_empty,W_main_landing_gear)
 X_positions = np.append(X_positions,X_main_landing_gear)
+partNames = np.append(partNames,'Main Landing Gear')
 
 # 15.6 Nose Landing Gear Weight
 W_nose_landing_gear = (W_l * N_l)**0.290 * L_n**0.5 * N_nw**0.525
 weights = np.append(weights,W_nose_landing_gear)
 weights_empty = np.append(weights_empty,W_nose_landing_gear)
 X_positions = np.append(X_positions,X_nose_landing_gear)
+partNames = np.append(partNames,'Nose Landing Gear')
 
 # 15.7 Engine Mounts
 W_engine_mounts = 0.013*((thrust)**(0.579))*N_z
 weights = np.append(weights,W_engine_mounts)
 weights_empty = np.append(weights_empty,W_engine_mounts)
 X_positions = np.append(X_positions,X_Engine) # Assume same as engine CG
+partNames = np.append(partNames,'Engine Mount')
 
 # 15.8 Firewall
 W_firewall = 1.135*S_fw
 weights = np.append(weights,W_firewall)
 X_positions = np.append(X_positions,X_firewall)
 weights_empty = np.append(weights_empty,W_firewall)
+partNames = np.append(partNames,'Firewall')
 
 # 15.9 Engine Section
 W_engine_section = 0.01*(W_Engine**0.717)*N_z
 weights = np.append(weights,W_engine_section)
 weights_empty = np.append(weights_empty,W_engine_section)
 X_positions = np.append(X_positions,X_Engine) # Assume same as engine CG
+partNames = np.append(partNames,'Engine Section')
 
 # 15.10 Air Induction System Weight (the intake)
 W_air_induction = (13.29 * K_vg * L_d**0.643 * K_d**0.182 * 
@@ -211,66 +224,77 @@ W_air_induction = (13.29 * K_vg * L_d**0.643 * K_d**0.182 *
 weights = np.append(weights,W_air_induction)
 weights_empty = np.append(weights_empty,W_air_induction)
 X_positions = np.append(X_positions,X_Intake)
+partNames = np.append(partNames,'Intakes')
 
 # 15.13 Oil Cooling
 W_oil_cooling = 37.28*N_en**1.023
 weights = np.append(weights,W_oil_cooling)
 weights_empty = np.append(weights_empty,W_oil_cooling)
 X_positions = np.append(X_positions,X_Engine) # Assume same as engine CG
+partNames = np.append(partNames,'Oil Cooling')
 
 # 15.14 Engine Controls
 W_engine_controls = 10.5*(N_en**1.008)*(L_ec**0.222)
 weights = np.append(weights,W_engine_controls) 
 weights_empty = np.append(weights_empty,W_engine_controls)
 X_positions = np.append(X_positions,X_engine_controls) # Assume CG at front of engine
+partNames = np.append(partNames,'Engine Controls')
 
 # 15.16 Fuel Systems and Tanks
 W_fuel_system_and_tanks = 7.45*(V_t**0.47)*((1+V_i/V_t)**-0.095)*(1+V_p/V_t)*(N_t**0.06)*N_en*(((thrust*TSFC)/1000)**0.249)
 weights = np.append(weights,W_fuel_system_and_tanks)
 weights_empty = np.append(weights_empty,W_fuel_system_and_tanks)
 X_positions = np.append(X_positions,X_fuel_system_and_tanks) # Assumed to be at CG of fuel stores
+partNames = np.append(partNames,'Fuel Systems and Tanks')
 
 # 15.17 Flight Controls
 W_flight_controls = 36.28*(M**0.003)*(S_csw**0.489)*(N_s**0.484)*(N_c**0.127)
 weights = np.append(weights,W_flight_controls)
 X_positions = np.append(X_positions,X_flight_controls) # Assume CG near middle of fuselage
 weights_empty = np.append(weights_empty,W_flight_controls)
+partNames = np.append(partNames,'Flight Controls')
 
 # 15.19 Hydraulics
 W_hydraulics = 37.23*N_u**0.604
 weights = np.append(weights,W_hydraulics)
 X_positions = np.append(X_positions,X_hydraulics) # Assume CG near middle of fuselage
 weights_empty = np.append(weights_empty,W_hydraulics)
+partNames = np.append(partNames,'Hydraulics')
 
 # 15.20 Electrical
 W_electrical = 172.2*K_mc*(R_kva**0.152)*(N_c**0.10)*(L_a**0.10)*(N_gen**0.091)
 weights = np.append(weights,W_electrical)
 X_positions = np.append(X_positions,X_electrical) # Assume CG near middle of fuselage
 weights_empty = np.append(weights_empty,W_electrical)
+partNames = np.append(partNames,'Electrical')
 
 # 15.22 Furnishings
 W_furinishings = 217.6*N_c
 weights = np.append(weights,W_furinishings)
 X_positions = np.append(X_positions,X_furnishings)
 weights_empty = np.append(weights_empty,W_furinishings)
+partNames = np.append(partNames,'Furnishings')
 
 # 15.23 Air Conditioning and Anti-Ice
 W_AC = 201.6*((1400+200*N_c)/1000)**0.735
 weights = np.append(weights,W_AC)
 weights_empty = np.append(weights_empty,W_AC)
 X_positions = np.append(X_positions,X_AC) # Assume CG near middle of fuselage
+partNames = np.append(partNames,'Air Conditioning and Anti Ice')
 
 # 15.24 Handling Gear
 W_handling_gear = (3.2*10**(-4))*W_dg
 weights = np.append(weights,W_handling_gear)
 weights_empty = np.append(weights_empty,W_handling_gear)
 X_positions = np.append(X_positions,X_handling_gear)
+partNames = np.append(partNames,'Handling Gear')
 
 # 15.36 APU
 W_APU_total = 2.2*W_APU
 weights = np.append(weights,W_APU_total)
 weights_empty = np.append(weights_empty,W_APU_total)
 X_positions = np.append(X_positions,X_APU)
+partNames = np.append(partNames,'APU')
 
 X_Cg_Aircraft = np.sum(np.multiply(X_positions,weights))/np.sum(weights)
 X_Cg_Aircraft_NoFuelorArms = np.sum(np.multiply(X_positions,weights_empty))/np.sum(weights_empty)
@@ -327,6 +351,10 @@ print(f"X_Cg_Aircraft_NoFuelorArms = {X_Cg_Aircraft_NoFuelorArms:.2f} ft")
 
 total_emptyish = np.sum(weights_empty)
 total_weight = np.sum(weights)
+
+# Export Weights and locations to a csv file
+weights_and_positions_data = pd.DataFrame({"Names":partNames,"Weights(lb)":weights,"Locations (ft)":X_positions})
+weights_and_positions_data.to_csv('Weight and Balance Spreadsheet.csv',index=False)
 
 print(f"\nSum of these components = {total_emptyish:.1f} lbs")
 print(f"GTOW                    = {total_weight:.2f} lbs")
