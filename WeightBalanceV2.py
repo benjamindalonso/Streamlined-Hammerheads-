@@ -354,7 +354,7 @@ total_weight = np.sum(weights)
 
 # Export Weights and locations to a csv file
 weights_and_positions_data = pd.DataFrame({"Names":partNames,"Weights(lb)":weights,"Locations (ft)":X_positions})
-weights_and_positions_data.to_csv('Weight and Balance Spreadsheet.csv',index=False)
+# weights_and_positions_data.to_csv('Weight and Balance Spreadsheet.csv',index=False)
 
 print(f"\nSum of these components = {total_emptyish:.1f} lbs")
 print(f"GTOW                    = {total_weight:.2f} lbs")
