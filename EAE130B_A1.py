@@ -6,10 +6,10 @@ g = 32.174
 knot_to_fps = 1.68781
 
 W = 54500          
-x_cg =  29.659       
-x_nose = 10    
-x_main = 31.6590   
-H = 7.787          
+x_cg =  30.42       
+x_nose = 7    
+x_main = 32.8   
+H = 8          
 
 n_main_wheels = 2
 n_nose_wheels = 2
@@ -96,17 +96,17 @@ print("Nose wheel width =", round(nose_wheel_width, 1), "in")
 
 
 # Landing gear geometry checks 
-x_cg_fully_loaded = 29.659
+x_cg_fully_loaded = 30.42
 z_cg_fully_loaded = -0.377
 
-x_cg_nofuel_noarmamants = 27.347
+x_cg_nofuel_noarmamants = 28.25
 z_cg_nofuel_noarmamants = -0.289
 
 x_furthest_aft_and_lowest_point = 47.786
 z_furthest_aft_and_lowest_point = -3.557
 
-x_main_gear = 31.6590 # Feet from nose of the center of the main gear wheels
-z_main_gear = -8.0760 # Feet below the nose of the bottom of the main gear wheels
+x_main_gear = 32.8 # Feet from nose of the center of the main gear wheels
+z_main_gear = -8 # Feet below the nose of the bottom of the main gear wheels
 
 # Longitudinal Tip Over and Ground Clearance (these two tests basically determine where the main gear has to be since it's the intersection of two lines)
 x_start1 = x_cg_fully_loaded
@@ -162,6 +162,15 @@ cid = fig.canvas.mpl_connect('button_press_event', onclick)
 
 plt.show()
 
+# Check longitudinal tip over angle
+tip_over_angle = math.atan((x_main_gear - x_cg_fully_loaded) / (z_main_gear - z_cg_fully_loaded))
+print("\nLongitudinal Tip Over Test")
+print("Longitudinal tip over angle =", round(np.degrees(tip_over_angle), 2), "degrees")
+
+# Check longitudinal ground clearance angle
+ground_clearance_angle = math.atan((z_main_gear - z_furthest_aft_and_lowest_point) / (x_main_gear - x_furthest_aft_and_lowest_point))
+print("\nGround Clearance Test")    
+print("Ground clearance angle =", round(np.degrees(ground_clearance_angle), 2), "degrees")
 
 # Lateral Tip Over Test
 
