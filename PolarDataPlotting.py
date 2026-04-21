@@ -33,7 +33,7 @@ y = [
 
 # Plot the airfoil
 plt.figure(figsize=(12, 5))
-plt.plot(x, y, 'b-', linewidth=2.5, label='Flaps 40 Deg, Slats 15 Deg')
+plt.plot(x, y, 'b-', linewidth=2.5, label='Flaps -40 Deg, Slats -15 Deg')
 plt.fill(x, y, color='lightblue', alpha=0.4)
 
 plt.xlabel('x/c  (chord fraction)', fontsize=12)
@@ -75,7 +75,7 @@ y = [
 
 # Plot the airfoil
 plt.figure(figsize=(12, 5))
-plt.plot(x, y, 'r-', linewidth=2.5, label='Flaps 20 Deg, Slats 8 Deg')
+plt.plot(x, y, 'r-', linewidth=2.5, label='Flaps -20 Deg, Slats -8 Deg')
 plt.fill(x, y, color='lightcoral', alpha=0.4)
 
 plt.xlabel('x/c  (chord fraction)', fontsize=12)
@@ -194,8 +194,8 @@ max_alpha_clean = alphaClean[clClean.index(max_cl_clean)]
 # Create the plot
 plt.figure(figsize=(14, 11))
 
-plt.plot(alphaLanding, clLanding, 'b-', linewidth=2.5, label='Landing MAC (Flaps 40 Deg, Slats 15 Deg)')
-plt.plot(alphaTakeoff, clTakeoff, 'r-', linewidth=2.5, label='Takeoff MAC (Flaps 20 Deg, Slats 8 Deg)')
+plt.plot(alphaLanding, clLanding, 'b-', linewidth=2.5, label='Landing MAC (Flaps -40 Deg, Slats -15 Deg)')
+plt.plot(alphaTakeoff, clTakeoff, 'r-', linewidth=2.5, label='Takeoff MAC (Flaps -20 Deg, Slats -8 Deg)')
 plt.plot(alphaClean, clClean, 'g-', linewidth=2.5, label='Clean Tip (Flaps 0 Deg, Slats 0 Deg)')
 
 # Mark the maximum CL points
