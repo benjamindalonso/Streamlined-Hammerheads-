@@ -6,7 +6,7 @@ g = 32.174
 knot_to_fps = 1.68781
 
 W = 54500          
-x_cg =  30.42       
+x_cg =  28.25       
 x_nose = 7    
 x_main = 32.8   
 H = 8          
