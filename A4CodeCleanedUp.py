@@ -49,12 +49,12 @@ Vthrust = 10 # Velocity added by engine thrust during catapult launch (Assumed t
 Vendfps = 1.6878 * Vend # This converts knots to feet per second
 Vwodfps = 1.6878 * Vwod # This converts knots to feet per second
 Vthrustfps = 1.6878 * Vthrust # This converts knots to feet per second
-Takeoff_Clmax = 2.0 # Clmax at takeoff per slide 11 of preliminary sizing part 2
+Takeoff_Clmax = 1.77 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 
 # Stall Constraint
 Vstall = 120 # Target stall speed in knots
 Vstallfps = 1.6878 * Vstall # Stall speed in feet per second
-Stall_Clmax = 2.6 # Maximum cl based on slide 11 of pleminiary sizing part 2
+Stall_Clmax = 1.96 # Maximum cl based on slide 11 of pleminiary sizing part 2
 
 # Maneuver Constraint
 TurnRate = 0.139626 # in Rad/s based on rfp minimum of 8 deg/s
