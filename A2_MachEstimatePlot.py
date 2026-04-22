@@ -109,13 +109,24 @@ rfp_points = [
 for m, label, color in rfp_points:
     idx = np.argmin(np.abs(Mach - m))
     cd_val = CD_total[idx]
-    # Plot star marker
+
+    # Only adjust the bottom (dark green) label
+    if color == 'darkgreen':
+        text_offset = (0, -30)   # move further down
+        ha = 'center'
+    else:
+        text_offset = (8, 12)    # keep original
+        ha = 'left'
+
+    # Plot marker
     plt.plot(m, cd_val, marker='*', markersize=10, color=color)
-    # Annotate the CD value
-    plt.annotate(f'{cd_val:.4f}', 
-                 xy=(m, cd_val), 
-                 xytext=(8, 12),
+
+    # Annotate
+    plt.annotate(f'{cd_val:.4f}',
+                 xy=(m, cd_val),
+                 xytext=text_offset,
                  textcoords='offset pixels',
+                 ha=ha,
                  fontsize=8,
                  color=color,
                  weight='bold')
