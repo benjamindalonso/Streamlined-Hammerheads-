@@ -10,17 +10,23 @@ WingSweep = 38 # Wing sweep angle
 FlapSweep = 82.1 # Flap sweep angle
 SlatSweep = 46.1 # Slat Sweep angle
 CosWingSweep = .788
-CosFlapSweep = .137
-CosSlatSweep = .693
+CosFlapSweep = .991
+CosSlatSweep = .773
 
-# Equations
+# Equations 
 
-CL_Max_Clean = .9*(Clmax_Clean)*CosWingSweep
-CL_Max_Flaps = .9*(Delta_Cl_Flap)*(S_Flaps/S_ref)*CosFlapSweep
-CL_Max_Slats = .9*(Delta_Cl_Slat)*(S_Slats/S_ref)*CosSlatSweep
+CL_Max_Clean_Takeoff = .9*(Clmax_Clean*.7)*CosWingSweep
+CL_Max_Flaps_Takeoff = .9*(Delta_Cl_Flap*.7)*(S_Flaps/S_ref)*CosFlapSweep
+CL_Max_Slats_Takeoff = .9*(Delta_Cl_Slat*.7)*(S_Slats/S_ref)*CosSlatSweep
 
+
+CL_Max_Clean_Landing = .9*(Clmax_Clean)*CosWingSweep
+CL_Max_Flaps_Landing = .9*(Delta_Cl_Flap)*(S_Flaps/S_ref)*CosFlapSweep
+CL_Max_Slats_Landing = .9*(Delta_Cl_Slat)*(S_Slats/S_ref)*CosSlatSweep
+
+CL_Max_Takeoff = CL_Max_Clean_Takeoff+CL_Max_Flaps_Takeoff+CL_Max_Slats_Takeoff
+CL_Max_Landing = CL_Max_Clean_Landing+CL_Max_Flaps_Landing+CL_Max_Slats_Landing
 # Print
 
-print("CLMaxClean =", round(CL_Max_Clean, 5), "Unitless")
-print("CLMaxFlaps =", round(CL_Max_Flaps, 5), "Unitless")
-print("CLMaxSlats =", round(CL_Max_Slats, 5), "Unitless")
+print("CLMaxTakeoff =", round(CL_Max_Takeoff, 5), "Unitless")
+print("CLMaxLanding =", round(CL_Max_Landing, 5), "Unitless")
