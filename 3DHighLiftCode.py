@@ -3,15 +3,15 @@
 S_Slats = 210.884 # Surface area of wing affected by slats
 S_Flaps = 285.2 # Surface area of wing affected by flaps
 S_ref = 600 # Surface area of main wing
-Delta_Cl_Flap = .9 + 1.8793 # Flap Clmax approximation
-Delta_Cl_Slat = .3 + 1.8793 # Slat Clmax approximation
+Delta_Cl_Flap = .9  # Flap Clmax approximation
+Delta_Cl_Slat = .3  # Slat Clmax approximation
 Clmax_Clean = 1.8793 # Clmax for clean configuration
 WingSweep = 38 # Wing sweep angle
 FlapSweep = 82.1 # Flap sweep angle
 SlatSweep = 46.1 # Slat Sweep angle
 CosWingSweep = .788
-CosFlapSweep = .991
-CosSlatSweep = .773
+CosFlapSweep = .994
+CosSlatSweep = .723
 
 # Equations 
 
