@@ -14,18 +14,18 @@ CosFlapSweep = .994
 CosSlatSweep = .723
 
 # Equations 
+CL_Max_Clean  = .9*(Clmax_Clean)*CosWingSweep
 
-CL_Max_Clean_Takeoff = .9*(Clmax_Clean*.7)*CosWingSweep
-CL_Max_Flaps_Takeoff = .9*(Delta_Cl_Flap*.7)*(S_Flaps/S_ref)*CosFlapSweep
-CL_Max_Slats_Takeoff = .9*(Delta_Cl_Slat*.7)*(S_Slats/S_ref)*CosSlatSweep
+    
+DeltaCL_Max_Flaps_Takeoff = .9*(Delta_Cl_Flap*.7)*(S_Flaps/S_ref)*CosFlapSweep
+DeltaCL_Max_Slats_Takeoff = .9*(Delta_Cl_Slat*.7)*(S_Slats/S_ref)*CosSlatSweep
 
 
-CL_Max_Clean_Landing = .9*(Clmax_Clean)*CosWingSweep
-CL_Max_Flaps_Landing = .9*(Delta_Cl_Flap)*(S_Flaps/S_ref)*CosFlapSweep
-CL_Max_Slats_Landing = .9*(Delta_Cl_Slat)*(S_Slats/S_ref)*CosSlatSweep
+DeltaCL_Max_Flaps_Landing = .9*(Delta_Cl_Flap)*(S_Flaps/S_ref)*CosFlapSweep
+DeltaCL_Max_Slats_Landing = .9*(Delta_Cl_Slat)*(S_Slats/S_ref)*CosSlatSweep
 
-CL_Max_Takeoff = CL_Max_Clean_Takeoff+CL_Max_Flaps_Takeoff+CL_Max_Slats_Takeoff
-CL_Max_Landing = CL_Max_Clean_Landing+CL_Max_Flaps_Landing+CL_Max_Slats_Landing
+CL_Max_Takeoff = CL_Max_Clean+DeltaCL_Max_Flaps_Takeoff+DeltaCL_Max_Slats_Takeoff
+CL_Max_Landing = CL_Max_Clean+DeltaCL_Max_Flaps_Landing+DeltaCL_Max_Slats_Landing
 # Print
 
 print("CLMaxTakeoff =", round(CL_Max_Takeoff, 5), "Unitless")
