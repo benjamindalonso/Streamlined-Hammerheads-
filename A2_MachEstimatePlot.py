@@ -89,16 +89,14 @@ for M in Mach:
 
 CD_total = np.array(CD_total)
 
-# -----------------------------
-# PLOTTING
-# -----------------------------
+# Plotting
 
 plt.figure()
 plt.plot(Mach, CD_total, label='Total Drag (Clean)')
 plt.axvline(x=0.9, linestyle='--', label='Drag Divergence')
 plt.axvline(x=1.2, linestyle='--', label='Full Supersonic Wave Drag')
 
-# === Four RFP Points with annotations ===
+# Points with annotations
 rfp_points = [
     (0.85, "Strike SL Dash (req.)", 'green'),
     (0.90, "Strike SL Dash (des.)", 'darkgreen'),
@@ -110,12 +108,12 @@ for m, label, color in rfp_points:
     idx = np.argmin(np.abs(Mach - m))
     cd_val = CD_total[idx]
 
-    # Only adjust the bottom (dark green) label
+    # To adjust the dark green label st it doesnt overlap other marker
     if color == 'darkgreen':
-        text_offset = (0, -30)   # move further down
+        text_offset = (0, -30)   # move down
         ha = 'center'
     else:
-        text_offset = (8, 12)    # keep original
+        text_offset = (8, 12)    
         ha = 'left'
 
     # Plot marker
