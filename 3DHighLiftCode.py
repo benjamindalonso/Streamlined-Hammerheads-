@@ -1,7 +1,18 @@
-# Variables
+# Measurements from Model
+FlapRoot = 22.481 # Feet
+FlapTip = 7.092 # Feet
+FlapLengthHorizontal = 12.816 # Feet
 
-S_Slats = 210.884 # Surface area of wing affected by slats
-S_Flaps = 285.2 # Surface area of wing affected by flaps
+SlatRoot = 22.159 # Feet
+SlatTip = 7.092 # Feet
+SlatLengthHorizontal = 12.461 # Feet
+
+
+# Variables
+S_Slats = (SlatRoot + SlatTip) * SlatLengthHorizontal  # Surface area of wing affected by slats
+S_Flaps = (FlapRoot + FlapTip) * FlapLengthHorizontal  # Surface area of wing affected by flaps
+print("S_Slats =", round(S_Slats, 2), "ft^2")
+print("S_Flaps =", round(S_Flaps, 2), "ft^2")
 S_ref = 600 # Surface area of main wing
 Delta_Cl_Flap = .9  # Flap Clmax approximation
 Delta_Cl_Slat = .3  # Slat Clmax approximation
