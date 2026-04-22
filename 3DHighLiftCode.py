@@ -1,7 +1,7 @@
 # Variables
 
-S_Slats = 210.884 # Surface area of wing affected by slats
-S_Flaps = 285.2 # Surface area of wing affected by flaps
+S_Slats = 365.175 # Surface area of wing affected by slats
+S_Flaps = 372.519 # Surface area of wing affected by flaps
 S_ref = 600 # Surface area of main wing
 Delta_Cl_Flap = .9  # Flap Clmax approximation
 Delta_Cl_Slat = .3  # Slat Clmax approximation
