@@ -39,5 +39,6 @@ CL_Max_Takeoff = CL_Max_Clean+DeltaCL_Max_Flaps_Takeoff+DeltaCL_Max_Slats_Takeof
 CL_Max_Landing = CL_Max_Clean+DeltaCL_Max_Flaps_Landing+DeltaCL_Max_Slats_Landing
 # Print
 
+print("CLMaxClean =", round(CL_Max_Clean, 5), "Unitless")
 print("CLMaxTakeoff =", round(CL_Max_Takeoff, 5), "Unitless")
 print("CLMaxLanding =", round(CL_Max_Landing, 5), "Unitless")

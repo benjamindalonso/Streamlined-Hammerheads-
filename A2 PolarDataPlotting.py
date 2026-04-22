@@ -204,19 +204,19 @@ plt.plot(max_alpha_takeoff, max_cl_takeoff, 'ro', markersize=8)
 plt.plot(max_alpha_clean, max_cl_clean, 'go', markersize=8)
 
 # Annotate the max CL values
-plt.annotate(f'Max Cl = {max_cl_landing:.4f}',
+plt.annotate(f'Max Cl = {max_cl_landing:.2f}',
              xy=(max_alpha_landing, max_cl_landing),
              xytext=(10, 15), textcoords='offset points',
              arrowprops=dict(arrowstyle='->', color='blue'),
              fontsize=14, color='blue')
 
-plt.annotate(f'Max Cl = {max_cl_takeoff:.4f}',
+plt.annotate(f'Max Cl = {max_cl_takeoff:.2f}',
              xy=(max_alpha_takeoff, max_cl_takeoff),
              xytext=(10, 15), textcoords='offset points',
              arrowprops=dict(arrowstyle='->', color='red'),
              fontsize=14, color='red')
 
-plt.annotate(f'Max Cl = {max_cl_clean:.4f}',
+plt.annotate(f'Max Cl = {max_cl_clean:.2f}',
              xy=(max_alpha_clean, max_cl_clean),
                 xytext=(10, 15), textcoords='offset points',
                 arrowprops=dict(arrowstyle='->', color='green'),
