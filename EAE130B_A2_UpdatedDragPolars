@@ -56,13 +56,13 @@ plt.title("Drag Polars",fontsize=14)
 plt.plot(CD_Clean,CL_Clean,color='black',label='Clean Configuration',linewidth='2')
 
 # Plot flaps polar
-plt.plot(CD_FlapsLandingGear,CL_Landing,color='blue',label='Flaps/Slats Down',linestyle='-.',linewidth='3')
+plt.plot(CD_Flaps,CL_Landing,color='blue',label='Flaps/Slats Down',linestyle='-.',linewidth='2')
 
 # Plot flaps + gear polar
-plt.plot(CD_FlapsLandingGear,CL_Landing,color='red',label='Flaps/Slats and Gear Down',linestyle=':',linewidth='5')
+plt.plot(CD_FlapsLandingGear,CL_Landing,color='red',label='Flaps/Slats and Gear Down',linestyle='-',linewidth='2')
 
 # Stall due to lack of thrust
-plt.axvline(1.23,color='red',label='Stall: Thrust =/= Drag',linestyle=':',linewidth='2')
+plt.axvline(1.23,color='green',label='Stall: Thrust =/= Drag',linestyle=':',linewidth='4')
 
 plt.xlabel("Drag Coefficient",fontsize=12)
 plt.ylim(-2,3.2)
