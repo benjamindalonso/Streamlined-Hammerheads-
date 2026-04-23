@@ -38,7 +38,7 @@ plt.fill(x, y, color='lightblue', alpha=0.4)
 
 plt.xlabel('x/c  (chord fraction)', fontsize=12)
 plt.ylabel('y/c', fontsize=12)
-plt.title('NACA 65-410 Airfoil Geometry\nLanding Configuration', fontsize=14)
+plt.title('NACA 65-410 Airfoil Geometry\nLanding/Takeoff Configuration', fontsize=14)
 plt.grid(True, linestyle='--', alpha=0.6)
 plt.axis('equal')
 plt.legend(fontsize=11)
@@ -194,13 +194,13 @@ max_alpha_clean = alphaClean[clClean.index(max_cl_clean)]
 # Create the plot
 plt.figure(figsize=(14, 11))
 
-plt.plot(alphaLanding, clLanding, 'b-', linewidth=2.5, label='Landing MAC (Flaps -40 Deg, Slats -15 Deg)')
-plt.plot(alphaTakeoff, clTakeoff, 'r-', linewidth=2.5, label='Takeoff MAC (Flaps -20 Deg, Slats -8 Deg)')
+plt.plot(alphaLanding, clLanding, 'b-', linewidth=2.5, label='Landing/Takeoff MAC (Flaps -40 Deg, Slats -15 Deg)')
+#plt.plot(alphaTakeoff, clTakeoff, 'r-', linewidth=2.5, label='Takeoff MAC (Flaps -20 Deg, Slats -8 Deg)')
 plt.plot(alphaClean, clClean, 'g-', linewidth=2.5, label='Clean Tip (Flaps 0 Deg, Slats 0 Deg)')
 
 # Mark the maximum CL points
 plt.plot(max_alpha_landing, max_cl_landing, 'bo', markersize=8)
-plt.plot(max_alpha_takeoff, max_cl_takeoff, 'ro', markersize=8)
+#plt.plot(max_alpha_takeoff, max_cl_takeoff, 'ro', markersize=8)
 plt.plot(max_alpha_clean, max_cl_clean, 'go', markersize=8)
 
 # Annotate the max CL values
@@ -210,11 +210,11 @@ plt.annotate(f'Max Cl = {max_cl_landing:.2f}',
              arrowprops=dict(arrowstyle='->', color='blue'),
              fontsize=14, color='blue')
 
-plt.annotate(f'Max Cl = {max_cl_takeoff:.2f}',
-             xy=(max_alpha_takeoff, max_cl_takeoff),
-             xytext=(10, 15), textcoords='offset points',
-             arrowprops=dict(arrowstyle='->', color='red'),
-             fontsize=14, color='red')
+#plt.annotate(f'Max Cl = {max_cl_takeoff:.2f}',
+#             xy=(max_alpha_takeoff, max_cl_takeoff),
+#             xytext=(10, 15), textcoords='offset points',
+#             arrowprops=dict(arrowstyle='->', color='red'),
+#             fontsize=14, color='red')
 
 plt.annotate(f'Max Cl = {max_cl_clean:.2f}',
              xy=(max_alpha_clean, max_cl_clean),
