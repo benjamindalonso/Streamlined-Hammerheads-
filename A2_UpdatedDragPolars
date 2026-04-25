@@ -1,0 +1,97 @@
+import numpy as np
+import pandas as pd
+import math
+import matplotlib.pyplot as plt
+
+# Inputs
+AR = 2.02758
+
+deltaCD_Gear = 0.02272 # additional drag due to landing gear
+CD_Trim = 0 # drag due to trim state (Negelected)
+CD_Wave = 0 # wave drag (Negligible Landing Mach Number < 0.3)
+
+def inducedDrag(e,AR,CL_Max,CL_0):
+    C_L = np.linspace(-CL_Max+CL_0,CL_Max,50)
+    C_Di = ((C_L-CL_0)**2)/(math.pi*e*AR)
+    return C_L,C_Di
+
+# Clean =====================================================================================================
+CD_0 = 0.00885 # Parasite Drag
+CL_MaxClean = 0.98 # stall lift coeffiecient
+CL_0Clean = -0.05 # lift at minimum drag 
+e_Clean = 0.5398 # span efficiency clean configuration
+CL_Clean, CDi_Clean = inducedDrag(e_Clean,AR,CL_MaxClean,CL_0Clean)
+CD_Clean = CD_0 + CD_Trim + CD_Wave + CDi_Clean
+
+# Landing ===================================================================================================
+# Landing Flaps
+CL_MaxFlaps = 3 # stall lift coefficient with flaps down
+CL_0Flaps = 0.35 # lift at minumum drag
+e_Flaps = 0.361 # span efficiency with flaps
+deltaCD_Flaps = 0.02058 # additional drag due to flaps
+CL_Landing,CDi_Landing = inducedDrag(e_Flaps,AR,CL_MaxFlaps,CL_0Flaps)
+CD_Flaps = CD_0 + deltaCD_Flaps + CD_Trim + CD_Wave + CDi_Landing
+
+# Landing Flaps & Landing Gear
+CD_FlapsLandingGear = CD_Flaps + deltaCD_Gear
+
+# Take-off ==================================================================================================
+# Take off flaps
+CL_MaxFlaps_TO = 2.1 # stall lift coeff with TO flaps
+CL_0Flaps_TO = 0.22 # lift at minmum drag
+e_Flaps_TO = 0.5503 # span efficiency with TO flaps
+deltaCD_Flaps_TO = 0.006859 # additional drag due to TO flaps
+CL_TO, CDi_TO = inducedDrag(e_Flaps_TO,AR,CL_MaxFlaps_TO,CL_0Flaps_TO)
+CD_Flaps_TO = CD_0 + deltaCD_Flaps_TO + CD_Trim + CD_Wave + CDi_TO
+
+# Landing Flaps & Landing Gear
+CD_FlapsLandingGear_TO = CD_Flaps_TO + deltaCD_Gear
+
+# Landing polars ============================================================================================
+plt.figure(figsize=(11,9))
+
+plt.title("Drag Polars",fontsize=14)
+
+# Plot clean polar
+plt.plot(CD_Clean,CL_Clean,color='black',label='Clean Configuration',linewidth='2')
+
+# Plot flaps polar
+plt.plot(CD_Flaps,CL_Landing,color='blue',label='Flaps/Slats Down',linestyle='-.',linewidth='2')
+
+# Plot flaps + gear polar
+plt.plot(CD_FlapsLandingGear,CL_Landing,color='red',label='Flaps/Slats and Gear Down',linestyle='-',linewidth='2')
+
+# Stall due to lack of thrust
+plt.axvline(1.23,color='green',label='Stall: Thrust =/= Drag',linestyle=':',linewidth='4')
+
+plt.xlabel("Drag Coefficient",fontsize=12)
+plt.ylim(-2,3.2)
+plt.ylabel("Lift Coefficient",fontsize=12)
+plt.minorticks_on()
+plt.grid(which='major',linewidth=2)
+plt.grid(which='minor',linewidth=0.5)
+plt.legend()
+plt.show()
+
+# Takeoff polars ============================================================================================
+plt.figure(figsize=(11,9))
+
+plt.title("Take-off Drag Polars",fontsize=14)
+
+# Plot clean polar
+plt.plot(CD_Clean,CL_Clean,color='blue',label='Clean Configuration')
+
+# Plot flaps polar
+plt.plot(CD_Flaps,CL_TO,color='red',label='Take-off Flaps/Slats Down')
+
+# Plot flaps + gear polar
+plt.plot(CD_FlapsLandingGear,CL_TO,color='green',label='Take-off Flaps/Slats and Gear Down',linestyle='-.')
+
+plt.xlabel("Drag Coefficient",fontsize=12)
+plt.ylim(-2.5,2.5)
+plt.ylabel("Lift Coefficient",fontsize=12)
+plt.minorticks_on()
+plt.grid(which='major',linewidth=2)
+plt.grid(which='minor',linewidth=0.5)
+plt.legend()
+plt.show()

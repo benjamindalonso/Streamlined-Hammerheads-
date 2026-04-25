@@ -31,7 +31,7 @@ e = 0.8 # Oswald efficiency factor (Typical value for fighter))
 AR = 2.227 # Aspect Ratio from OpenVSP
 K =  1/(math.pi*e*AR) # Induced drag factor
 Climb_Cd0 = Clean_Cd0 + 0.015 # Adjust coefficient of drag for takeoff flaps
-Takeoff_Clmax = 2.0 # Slide 11 Preliminary sizing lecture part 2
+Takeoff_Clmax = 1.77 # Slide 11 Preliminary sizing lecture part 2
 ROC = 200 # Rate of _ ft/min
 V_horizontal = 500 * 1.68781  # Climb airspeed knots to ft/s
 V_horizontal_min = V_horizontal * 60  # Climb airspeed in ft/min
@@ -40,7 +40,7 @@ rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/f
 
 # Landing Constraint
 maxLandSpeed = 202.6 # Max landing speed in feet per second 
-Landing_Clmax = 2.3
+Landing_Clmax = 1.96
 
 # Launch Constraint
 Vend = 135 # Catapult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catapult 
@@ -49,12 +49,12 @@ Vthrust = 10 # Velocity added by engine thrust during catapult launch (Assumed t
 Vendfps = 1.6878 * Vend # This converts knots to feet per second
 Vwodfps = 1.6878 * Vwod # This converts knots to feet per second
 Vthrustfps = 1.6878 * Vthrust # This converts knots to feet per second
-Takeoff_Clmax = 2.0 # Clmax at takeoff per slide 11 of preliminary sizing part 2
+Takeoff_Clmax = 1.77 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 
 # Stall Constraint
 Vstall = 120 # Target stall speed in knots
 Vstallfps = 1.6878 * Vstall # Stall speed in feet per second
-Stall_Clmax = 2.6 # Maximum cl based on slide 11 of pleminiary sizing part 2
+Stall_Clmax = 1.96 # Maximum cl based on slide 11 of pleminiary sizing part 2
 
 # Maneuver Constraint
 TurnRate = 0.139626 # in Rad/s based on rfp minimum of 8 deg/s
