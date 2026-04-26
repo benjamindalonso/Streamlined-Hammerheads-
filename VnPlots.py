@@ -18,7 +18,7 @@ e = 0.5
 AR = 2.028
 k = 1 / (np.pi * e * AR)
 
-CL_max = 1.55
+CL_max = 1.96 # Pulled from A4CleanedUpData script
 n_pos_limit = 7.5
 n_neg_limit = -4.5
 
@@ -29,7 +29,7 @@ print(f"Altitude density ratio: {rho/rho_sl:.4f}")
 # ================== Wave Drag Models ==================
 Amax = 63.0
 length = 47.78
-Ewd = 1.2
+Ewd = 1.4
 M_dd = 0.9
 
 def mach(V):
@@ -190,7 +190,7 @@ print("\n" + "="*70)
 print("WEIGHT SENSITIVITY TEST")
 print("="*70)
 
-test_weights = [45000, 54748, 65000]
+test_weights = [33000, 54748, 65000]
 for test_W in test_weights:
     test_Vmax = find_vmax(test_W)
     if test_Vmax:
