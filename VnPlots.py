@@ -14,137 +14,259 @@ def compute_stall_boundary(V_min, V_max, n_points, rho, CL_max, Weight, S_ref):
 
     return V, n_Stall, stall_coeff
 
-# Parameters
-
-Thrust = 43000 # lbf, thrust of F135 engine
-Drag = Thrust # lbf, drag at max speed
-
-V_min = 0          # m/s, minimum speed
-V_max = 241        # m/s, maximum speed
+# Given parameters
+T_sl = 43000      # lbf, F135 sea-level static thrust
+rho = 0.0008893    # slug/ft^3 at 30,000 ft
+rho_sl = 0.002377 # slug/ft^3 at sea level
+T = T_sl * (rho / rho_sl)
+W =  54748.05     # lbf
+S = 600           # ft^2
+CD0 = 0.007       # from OpenVSP parasite drag (clean)
 n_points = 100     # number of points in the speed range
+e = 0.5
+AR = 2.028
+k = 1 / (np.pi * e * AR)
+V_min = 0          # ft/s, minimum speed
+
+print(f"Using altitude-corrected thrust T = {T:.1f} lbf at 30,000 ft")
+
+# Speed of sound at 30,000 ft (ft/s)
+a_sound = 994.7
+
+# Additional wave-drag model constants from A2_MachEstimatePlot
+Amax = 63.0        # ft^2 reference max cross-sectional area
+length = 47.78     # ft
+Ewd = 1.4          # wave drag efficiency factor
+M_dd = 0.9         # drag divergence Mach
 
 
-rho = 1.225        # kg/m^3, air density at conditions of sea level
-CL_max = 1.6       # maximum lift coefficient
-MTOW = 227900      # kg, maximum takeoff weight
-g = 9.81           # m/s^2, acceleration due to gravity
-Weight = MTOW * g * 1.15  # N
-S_ref =  377      # m^2, reference wing area
+def mach(V, a=a_sound):
+    return V / a
 
-Boundary_V, Boundary_n_Stall, stall_coeff = compute_stall_boundary(V_min, V_max, n_points, rho, CL_max, Weight, S_ref)
 
-V = np.linspace(V_min, V_max, n_points)
+def sears_haack_drag(Amax, length):
+    return (9 * np.pi / 2.0) * (Amax / length)**2
 
-plt.figure(figsize=(16,9))
-plt.title('Maneuvering Envelope')
-plt.xlabel("V (m/s)")
-plt.ylabel("n (-)")
-plt.plot(Boundary_V, Boundary_n_Stall, label='Stall', linestyle='-', linewidth=2, marker=None, markersize=8)
-plt.plot(Boundary_V, -Boundary_n_Stall, label='Stall', linestyle='-', linewidth=2, marker=None, markersize=8)
-plt.grid(True)
+
+def wave_drag(M):
+    M = np.asarray(M, dtype=float)
+    D_q_SH = sears_haack_drag(Amax, length)
+    
+    # Initialize output
+    result = np.zeros_like(M)
+    
+    # Only compute for M >= 1.2
+    mask = M >= 1.2
+    mach_corr = 1 - 0.386 * (M[mask] - 1.2)**0.57
+    result[mask] = Ewd * mach_corr * D_q_SH / S
+    
+    return float(result) if result.shape == () else result
+
+
+def transonic_drag_rise(M):
+    M = np.asarray(M, dtype=float)
+    result = np.zeros_like(M)
+    
+    # M < M_dd: return 0.0 (already initialized to 0)
+    
+    # M_dd <= M < 1.2: cubic rise
+    mid_mask = (M >= M_dd) & (M < 1.2)
+    t = (M[mid_mask] - M_dd) / (1.2 - M_dd)
+    result[mid_mask] = 0.01 * t**3
+    
+    # M >= 1.2: return 0.01
+    high_mask = M >= 1.2
+    result[high_mask] = 0.01
+    
+    return float(result) if result.shape == () else result
+
+
+def CD_wave(M):
+    M = np.asarray(M, dtype=float)
+    return wave_drag(M) + transonic_drag_rise(M)
+
+
+def drag(V):
+    CL = 2 * W / (rho * S * V**2)
+    CD = CD0 + k * CL**2 + CD_wave(mach(V))
+    return 0.5 * rho * S * V**2 * CD
+
+
+def f(V):
+    return drag(V) - T
+
+# Find the high-speed root using a simple bracket search
+V_min_HighSpeed = 200.0
+V_max_HighSpeed = 5000.0
+V_grid = np.linspace(V_min_HighSpeed, V_max_HighSpeed, 10000)
+F = f(V_grid)
+
+# Find sign changes
+idx = np.where(np.sign(F[:-1]) != np.sign(F[1:]))[0]
+if len(idx) == 0:
+    raise RuntimeError("No root found for drag = thrust with wave drag included.")
+
+# Choose the highest-speed root
+root_intervals = [(V_grid[i], V_grid[i+1]) for i in idx]
+V_roots = []
+for v0, v1 in root_intervals:
+    f0 = f(v0)
+    f1 = f(v1)
+    V_roots.append(v0 - f0 * (v1 - v0) / (f1 - f0))
+
+V_max = max(V_roots)
+print(f"Upper root V = {V_max:.3f} ft/s")
+
+Vtest = V_max
+CL = 2*W/(rho*S*Vtest**2)
+Di = 0.5*rho*S*Vtest**2 * k * CL**2
+D0 = 0.5*rho*S*Vtest**2 * CD0
+Dw = 0.5*rho*S*Vtest**2 * CD_wave(mach(Vtest))
+
+print("Induced:", Di)
+print("Parasite:", D0)
+print("Wave:", Dw)
+
+# ============================================================================
+# Calculate Stall Boundary and Initialize Velocity Array
+# ============================================================================
+Boundary_V, Boundary_n_Stall, stall_coeff = compute_stall_boundary(
+    V_min, V_max, n_points, rho, CL, W, S
+)
+velocity_range = np.linspace(V_min, V_max, n_points)
+
+# ============================================================================
+# Plot 1: Basic Stall Boundary
+# ============================================================================
+plt.figure(figsize=(16, 9))
+plt.title('V-n Diagram: Stall Boundary Only')
+plt.xlabel('Velocity (ft/s)')
+plt.ylabel('Load Factor n (-)')
+plt.plot(Boundary_V, Boundary_n_Stall, 'b-', linewidth=2, label='Stall (Positive)')
+plt.plot(Boundary_V, -Boundary_n_Stall, 'b-', linewidth=2, label='Stall (Negative)')
+plt.grid(True, alpha=0.3)
 plt.legend(loc='best')
 plt.show()
 
-def compute_positive_limit_loads(weight_lb):
-    n_pos_formula = 2.1 + 24000 / (weight_lb + 10000)  # FAR 25.337 formula
+# ============================================================================
+# Define Load Factors for 5th Generation Fighter
+# ============================================================================
+n_pos_limit = np.ones(n_points) * 7.5   # Positive limit load factor
+n_neg_limit = np.ones(n_points) * -4.5  # Negative limit load factor
+print(f"Positive limit load factor: {n_pos_limit[0]:.2f} g")
+print(f"Negative limit load factor: {n_neg_limit[0]:.2f} g")
 
-    if n_pos_formula < 2.5:
-        print(f"Computed positive limit load factor is {n_pos_formula:.2f}, "
-              f"so use 2.50 based on FAR 25 minimum.")
-        selected_n_pos_limit = 2.5
-    elif n_pos_formula > 3.8:
-        print(f"Computed positive limit load factor is {n_pos_formula:.2f}, "
-              f"so cap at 3.80 based on FAR 25 maximum.")
-        selected_n_pos_limit = 3.8
-    else:
-        print(f"Computed positive limit load factor is {n_pos_formula:.2f}, "
-              f"so use the computed value.")
-        selected_n_pos_limit = n_pos_formula
-
-    return selected_n_pos_limit
-
-MTOW_lb = 502500 # lb, maximum takeoff weight
-n_pos_limit = compute_positive_limit_loads(MTOW_lb)
-n_pos_limit = np.ones(100)*3
-
-# For negative limit load factor, FAR 25.335 specifies -1.0 for transport category airplanes
-n_neg_limit = -1.0*np.ones(100)
-print(f"Negative limit load factor: {n_neg_limit[0]:.2f}")
-
-plt.figure(figsize=(16,9))
-plt.title('Maneuvering Envelope')
-plt.xlabel("V (m/s)")
-plt.ylabel("n (-)")
-plt.plot(Boundary_V, Boundary_n_Stall, label='Stall', linestyle='-', linewidth=2, marker=None, markersize=8)
-plt.plot(Boundary_V, -Boundary_n_Stall, label='Stall', linestyle='-', linewidth=2, marker=None, markersize=8)
-plt.plot(V,n_pos_limit, label='Limit Load Pos', linestyle='-', linewidth=2, marker=None, markersize=8)
-plt.plot(V,n_neg_limit, label='Limit Load Neg', linestyle='-', linewidth=2, marker=None, markersize=8)
-plt.grid(True)
+# ============================================================================
+# Plot 2: Stall Boundary with Limit Load Lines
+# ============================================================================
+plt.figure(figsize=(16, 9))
+plt.title('V-n Diagram: Stall Boundary + Limit Load Factors')
+plt.xlabel('Velocity (ft/s)')
+plt.ylabel('Load Factor n (-)')
+plt.plot(Boundary_V, Boundary_n_Stall, 'b-', linewidth=2, label='Stall (Positive)')
+plt.plot(Boundary_V, -Boundary_n_Stall, 'b-', linewidth=2, label='Stall (Negative)')
+plt.plot(velocity_range, n_pos_limit, 'r--', linewidth=2, label=f'Limit Load: +{n_pos_limit[0]:.1f} g')
+plt.plot(velocity_range, n_neg_limit, 'r--', linewidth=2, label=f'Limit Load: {n_neg_limit[0]:.1f} g')
+plt.grid(True, alpha=0.3)
 plt.legend(loc='best')
 plt.show()
 
-def compute_intersection_velocity(stall_coeff, n_limit):
-    """
-    Solve stall_coeff * V^2 = |n_limit|
-    """
-    int_V = np.sqrt(abs(n_limit) / stall_coeff)
-    print(f"Intersection velocity for n_limit={n_limit:.2f} is {int_V:.2f} m/s")
-    return int_V
+# ============================================================================
+# Calculate Stall Envelope Corners (Intersection Points)
+# ============================================================================
+def find_corner_velocity(stall_coeff, load_factor):
+    """Find velocity where stall boundary intersects a load factor limit."""
+    corner_speed = np.sqrt(abs(load_factor) / stall_coeff)
+    print(f"Corner velocity at n = {load_factor:+.2f}: {corner_speed:.2f} ft/s")
+    return corner_speed
 
-# Compute intersection velocities for positive and negative limit load factors with in the stall boundary
-V_stall_pos_end = compute_intersection_velocity(stall_coeff, n_pos_limit[0])
-V_stall_pos = np.linspace(0, V_stall_pos_end, 100)
+V_corner_pos = find_corner_velocity(stall_coeff, n_pos_limit[0])
+V_corner_neg = find_corner_velocity(stall_coeff, n_neg_limit[0])
 
-V_stall_neg_end = compute_intersection_velocity(stall_coeff, n_neg_limit[0])
-V_stall_neg = np.linspace(0, V_stall_neg_end, 100)
+# Define stall boundary segments up to corner velocities
+v_stall_pos_segment = np.linspace(0, V_corner_pos, n_points)
+v_stall_neg_segment = np.linspace(0, V_corner_neg, n_points)
 
-# Compute the corresponding n values at the intersection points
-n_stall_pos_intersection = stall_coeff * V_stall_pos**2
-n_stall_neg_intersection = -stall_coeff * V_stall_neg**2
+n_stall_pos_segment = stall_coeff * v_stall_pos_segment**2
+n_stall_neg_segment = -stall_coeff * v_stall_neg_segment**2
 
-plt.figure(figsize=(16,9))
-plt.title('Maneuvering Envelope with Intersection Velocities')
-plt.xlabel("V (m/s)")
-plt.ylabel("n (-)")
-plt.plot(V_stall_pos, n_stall_pos_intersection  , label='Stall-Pos Intersection', linewidth=2, marker=None, markersize=8)
-plt.plot(V_stall_neg, n_stall_neg_intersection  , label='Stall-Neg Intersection', linewidth=2, marker=None, markersize=8)
-plt.grid(True)
+# ============================================================================
+# Plot 3: Stall Boundary Segments with Corners
+# ============================================================================
+plt.figure(figsize=(16, 9))
+plt.title('V-n Diagram: Stall Boundary Segments at Corner Velocities')
+plt.xlabel('Velocity (ft/s)')
+plt.ylabel('Load Factor n (-)')
+plt.plot(v_stall_pos_segment, n_stall_pos_segment, 'b-', linewidth=2.5, label='Stall Boundary (Positive)')
+plt.plot(v_stall_neg_segment, n_stall_neg_segment, 'b-', linewidth=2.5, label='Stall Boundary (Negative)')
+plt.scatter([V_corner_pos], [n_pos_limit[0]], color='red', s=100, zorder=5, label='Corner Point (Positive)')
+plt.scatter([V_corner_neg], [n_neg_limit[0]], color='red', s=100, zorder=5, label='Corner Point (Negative)')
+plt.grid(True, alpha=0.3)
 plt.legend(loc='best')
 plt.show()
 
-# Extend the positive limit load line to the right of the intersection point
-V_pos_limit_extended = np.linspace(V_stall_pos_end, V_max, 100)
-V_neg_limit_extended = np.linspace(V_stall_neg_end, V_max, 100)
-n_pos_extended = n_pos_limit[0] * np.ones_like(V_pos_limit_extended)
-n_neg_extended = n_neg_limit[0] * np.ones_like(V_neg_limit_extended)
+# ============================================================================
+# Define Extended Limit Load Line Segments
+# ============================================================================
+v_limit_pos_extended = np.linspace(V_corner_pos, V_max, n_points)
+v_limit_neg_extended = np.linspace(V_corner_neg, V_max, n_points)
+n_limit_pos_extended = np.ones_like(v_limit_pos_extended) * n_pos_limit[0]
+n_limit_neg_extended = np.ones_like(v_limit_neg_extended) * n_neg_limit[0]
 
-plt.figure(figsize=(16,9))
-plt.title('Maneuvering Envelope with Extended Limit Load Lines')
-plt.xlabel("V (m/s)")
-plt.ylabel("n (-)")
-plt.plot(V_stall_pos, n_stall_pos_intersection  , label='Stall-Pos', linewidth=2, marker=None, markersize=8, color = 'blue')
-plt.plot(V_stall_neg, n_stall_neg_intersection  , label='Stall-Neg', linewidth=2, marker=None, markersize=8, color ='orange')
-plt.plot(V_pos_limit_extended, n_pos_extended, label='Limit Load Pos', linewidth=2, marker=None, markersize=8, color = 'blue')
-plt.plot(V_neg_limit_extended, n_neg_extended, label='Limit Load Neg', linewidth=2, marker=None, markersize=8, color = 'orange')
-plt.grid(True)
+# Define speed limit line at V_max
+v_exceed_limit = np.ones(n_points) * V_max
+n_exceed_range = np.linspace(n_neg_limit[0], n_pos_limit[0], n_points)
+
+# ============================================================================
+# Plot 4: Complete V-n Envelope (Stall Boundary + Extended Limits)
+# ============================================================================
+plt.figure(figsize=(16, 9))
+plt.title('V-n Diagram: Complete Flight Envelope')
+plt.xlabel('Velocity (ft/s)')
+plt.ylabel('Load Factor n (-)')
+
+# Stall boundaries
+plt.plot(v_stall_pos_segment, n_stall_pos_segment, 'b-', linewidth=2.5, label='Stall Boundary')
+plt.plot(v_stall_neg_segment, n_stall_neg_segment, 'b-', linewidth=2.5)
+
+# Extended limit loads
+plt.plot(v_limit_pos_extended, n_limit_pos_extended, 'r-', linewidth=2.5, label='Positive Limit Load')
+plt.plot(v_limit_neg_extended, n_limit_neg_extended, 'r-', linewidth=2.5, label='Negative Limit Load')
+
+# Speed limit
+plt.plot(v_exceed_limit, n_exceed_range, 'g-', linewidth=2.5, label='Maximum Speed Limit')
+
+plt.grid(True, alpha=0.3)
 plt.legend(loc='best')
 plt.show()
 
-V_exceed = V_max 
-# vertical line goes from negative limit load to positive limit load
-n_exceed_line = np.linspace(n_neg_limit[0], n_pos_limit[0], 100)
-V_exceed_line = V_exceed * np.ones_like(n_exceed_line)
+# ============================================================================
+# Plot 5: Final Maneuvering Envelope with All Boundaries
+# ============================================================================
+plt.figure(figsize=(16, 9))
+plt.title('V-n Diagram: Final Maneuvering Envelope for 5th Generation Fighter')
+plt.xlabel('Velocity (ft/s)')
+plt.ylabel('Load Factor n (-)')
 
+# Stall boundaries (blue)
+plt.plot(v_stall_pos_segment, n_stall_pos_segment, 'b-', linewidth=2.5, label='Stall Boundary')
+plt.plot(v_stall_neg_segment, n_stall_neg_segment, 'b-', linewidth=2.5)
 
-plt.figure(figsize=(16,9))
-plt.title('Maneuvering Envelope with Extended Limit Load Lines')
-plt.xlabel("V (m/s)")
-plt.ylabel("n (-)")
-plt.plot(V_stall_pos, n_stall_pos_intersection  , label='Stall-Pos', linewidth=2, marker=None, markersize=8, color = 'blue')
-plt.plot(V_stall_neg, n_stall_neg_intersection  , label='Stall-Neg', linewidth=2, marker=None, markersize=8, color ='orange')
-plt.plot(V_pos_limit_extended, n_pos_extended, label='Limit Load Pos', linewidth=2, marker=None, markersize=8, color = 'blue')
-plt.plot(V_neg_limit_extended, n_neg_extended, label='Limit Load Neg', linewidth=2, marker=None, markersize=8, color = 'orange')
-plt.plot(V_exceed_line, n_exceed_line,label='Exceed Speed', linewidth=2, color='purple')
-plt.grid(True)
-plt.legend(loc='best')
+# Extended limit loads (red)
+plt.plot(v_limit_pos_extended, n_limit_pos_extended, 'r-', linewidth=2.5, label='Structural Limit (Positive)')
+plt.plot(v_limit_neg_extended, n_limit_neg_extended, 'orange', linewidth=2.5, label='Structural Limit (Negative)')
+
+# Speed limit (green)
+plt.plot(v_exceed_limit, n_exceed_range, 'g-', linewidth=2.5, label='Speed Limit')
+
+# Shade the safe flight envelope
+plt.fill_between(v_stall_pos_segment, 0, n_stall_pos_segment, alpha=0.1, color='blue')
+plt.fill_between(v_stall_neg_segment, n_stall_neg_segment, 0, alpha=0.1, color='blue')
+plt.fill_between(v_limit_pos_extended, n_stall_pos_segment[-1], n_limit_pos_extended, alpha=0.1, color='blue')
+plt.fill_between(v_limit_neg_extended, n_limit_neg_extended, n_stall_neg_segment[-1], alpha=0.1, color='blue')
+
+plt.grid(True, alpha=0.3)
+plt.legend(loc='best', fontsize=10)
+plt.xlim(0, V_max)
+plt.ylim(min(n_neg_limit[0], -5), max(n_pos_limit[0], 8))
 plt.show()
