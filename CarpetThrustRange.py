@@ -90,7 +90,6 @@ fig, ax = plt.subplots(figsize=(12.5, 9))
 blue_cmap = get_cmap('Blues')
 red_cmap = get_cmap('Reds')
 
-# Store all data for proper axis limits
 all_x = []
 all_y = []
 
@@ -146,6 +145,98 @@ for i, CD0 in enumerate(CD0_values):
     ax.plot(x_list, y_list, '--', linewidth=2.2, color=color,
             label=f'CD₀ = {CD0:.5f}')
 
+# ====================== PLOTTING SECTION ======================
+
+fig, ax = plt.subplots(figsize=(12.5, 9))   
+
+blue_cmap = get_cmap('Blues')
+red_cmap = get_cmap('Reds')
+
+all_x = []
+all_y = []
+
+# === Constant Altitude (rho) lines - Blue ===
+for i, (rho, alt) in enumerate(zip(rho_values, altitudes)):
+    x_list = []
+    y_list = []
+    color = blue_cmap(0.35 + 0.65 * i / (len(rho_values)-1))
+    
+    for CD0 in CD0_values:
+        T_req = (0.5 * rho * V_fps**2 * CD0 * Sref) + \
+                (2 * k * W**2) / (rho * V_fps**2 * Sref)
+        
+        CD_total = (CD0 - CD0Design) + CD
+        Range_ft = 2 * np.sqrt(2 / (rho * Sref)) * \
+                   (1 / ct) * \
+                   (np.sqrt(CL) / CD_total) * \
+                   (np.sqrt(W_initial) - np.sqrt(W_final))
+        
+        Range_nm = Range_ft / 6076.12
+        
+        x_list.append(Range_nm)
+        y_list.append(T_req)
+        all_x.append(Range_nm)
+        all_y.append(T_req)
+    
+    ax.plot(x_list, y_list, '-', linewidth=2.6, color=color,
+            label=f'{alt:,} ft')
+
+# === Constant CD0 lines - Red dashed ===
+for i, CD0 in enumerate(CD0_values):
+    x_list = []
+    y_list = []
+    color = red_cmap(0.35 + 0.65 * i / (len(CD0_values)-1))
+    
+    for rho in rho_values:
+        T_req = (0.5 * rho * V_fps**2 * CD0 * Sref) + \
+                (2 * k * W**2) / (rho * V_fps**2 * Sref)
+        
+        CD_total = (CD0 - CD0Design) + CD
+        Range_ft = 2 * np.sqrt(2 / (rho * Sref)) * \
+                   (1 / ct) * \
+                   (np.sqrt(CL) / CD_total) * \
+                   (np.sqrt(W_initial) - np.sqrt(W_final))
+        
+        Range_nm = Range_ft / 6076.12
+        
+        x_list.append(Range_nm)
+        y_list.append(T_req)
+        all_x.append(Range_nm)
+        all_y.append(T_req)
+    
+    ax.plot(x_list, y_list, '--', linewidth=2.2, color=color,
+            label=f'CD₀ = {CD0:.5f}')
+
+# ====================== DESIGN POINT (30,000 ft) ======================
+design_rho = rho_values[4]        # ← Correct index for 30,000 ft
+design_cd0 = 0.00885
+
+CD_total_design = (design_cd0 - CD0Design) + CD
+
+T_req_design = (0.5 * design_rho * V_fps**2 * design_cd0 * Sref) + \
+               (2 * k * W**2) / (design_rho * V_fps**2 * Sref)
+
+Range_ft_design = 2 * np.sqrt(2 / (design_rho * Sref)) * \
+                  (1 / ct) * \
+                  (np.sqrt(CL) / CD_total_design) * \
+                  (np.sqrt(W_initial) - np.sqrt(W_final))
+
+Range_nm_design = Range_ft_design / 6076.12
+
+# Plot design point
+ax.plot(Range_nm_design, T_req_design, 'o', color='gold', markersize=14, 
+        markeredgecolor='black', markeredgewidth=2.5, zorder=10, 
+        label='_nolegend_')
+
+ax.annotate('Current Design Point\n(30,000 ft • CD₀ = 0.00885)', 
+            xy=(Range_nm_design, T_req_design),
+            xytext=(Range_nm_design -200, T_req_design + 850),
+            fontsize=11.5,
+            fontweight='bold',
+            ha='right',
+            arrowprops=dict(arrowstyle='->', color='black', lw=1.8),
+            bbox=dict(boxstyle="round,pad=0.5", facecolor="yellow", alpha=0.95))
+
 # ====================== Formatting ======================
 ax.set_xlabel('Cruise Range [nautical miles]', fontsize=14)
 ax.set_ylabel('Cruise Thrust Required [lbf]', fontsize=14)
@@ -155,14 +246,14 @@ ax.set_title('Carpet Plot\n'
 
 ax.grid(True, linestyle='--', alpha=0.6)
 
-# === Gentle Zoom Out (proper global min/max) ===
-ax.set_xlim(left=min(all_x)*0.95,  right=max(all_x)*1.08)
-ax.set_ylim(bottom=min(all_y)*0.92, top=max(all_y)*1.12)
+# Gentle zoom out
+ax.set_xlim(left=min(all_x)*0.93, right=max(all_x)*1.08)
+ax.set_ylim(bottom=min(all_y)*0.88, top=max(all_y)*1.14)
 
 # Legend 
 ax.legend(title='Constant Altitude (Blue)          Constant C$_{D0}$ (Red Dashed)',
           title_fontsize=11.5,
-          fontsize=10.8, 
+          fontsize=10.5, 
           loc='upper right', 
           ncol=2,
           frameon=True,
