@@ -1,85 +1,106 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.cm import get_cmap
 
-# ====================== AIRCRAFT INPUTS ======================
-CD0 = 0.025      # ← Your known parasite drag coefficient
-e = 0.85         # Oswald efficiency factor (tune this 0.75-0.9)
-gamma = 1.4
-p_sl = 2116.2    # Sea level pressure (lb/ft²). Lower for altitude.
+# =============================================================
+# Fighter Jet Carpet Plot - Altitude Labels + Clean Legend
+# =============================================================
 
-# Ranges matching slide style
-AR_values = np.array([6, 8, 10, 12, 14])           # Key ARs for constant Mach lines
-Mach_values = np.array([0.60, 0.62, 0.64, 0.66, 0.68, 0.70])  # Key Mach for constant AR lines
+# ====================== USER INPUT SECTION ======================
 
-num_points = 200   # For smooth curves
-# ============================================================
+rho_values = np.array([0.001756, 0.001496, 0.001267, 0.001066, 0.000891, 0.000738])
 
-def carpet_data(AR, Mach, CD0, e, gamma, p):
-    """Compute (L/D)max and W/S"""
-    CL_opt = np.sqrt(np.pi * AR * e * CD0)
-    LD_max = 0.5 * np.sqrt(np.pi * AR * e / CD0)
-    q = 0.5 * gamma * p * Mach**2
-    WS = CL_opt * q
-    return LD_max, WS
+# Corresponding altitudes (10k to 35k ft, 5k increments)
+altitudes = np.array([10000, 15000, 20000, 25000, 30000, 35000])   # feet
 
-# =============== Generate Data ===============
-fig, ax = plt.subplots(figsize=(11, 8))
+CD0_values = np.array([0.02304512, 0.0288064, 0.036008, 0.04501, 0.054012, 0.0648144])
 
-# 1. Constant AR lines (vary Mach) - these are the curved lines in slides
-for AR in AR_values:
-    LDs = []
-    WSs = []
-    Mach_range = np.linspace(0.55, 0.75, num_points)
-    for M in Mach_range:
-        LD, WS = carpet_data(AR, M, CD0, e, gamma, p_sl)
-        LDs.append(LD)
-        WSs.append(WS)
-    ax.plot(WSs, LDs, linewidth=2.2, label=f'AR = {AR}')
+# Fixed parameters
+V_fps      = 850.0
+Sref       = 600.0
+W          = 52390.0
+AR         = 2.028
+e          = 0.82
+k          = 1 / (np.pi * AR * e)
+ct         = 0.00022222
+CL         = 0.64180
+CD_trim    = 0.0005
+CD_wave    = 0.0005
+CDi_const  = 0.0005
+W_initial  = 52390.0
+W_final    = 42540.0
 
-# 2. Constant Mach lines (vary AR) - diagonal-ish lines
-for M in Mach_values:
-    LDs = []
-    WSs = []
-    AR_range = np.linspace(5, 15, num_points)
-    for AR in AR_range:
-        LD, WS = carpet_data(AR, M, CD0, e, gamma, p_sl)
-        LDs.append(LD)
-        WSs.append(WS)
-    ax.plot(WSs, LDs, '--', linewidth=1.8, alpha=0.85, label=f'M = {M:.2f}')
+# =============================================================
 
-# ====================== Plot Formatting ======================
-ax.set_xlabel('W/S (lb/ft²)', fontsize=12)
-ax.set_ylabel('(L/D)$_{max}$', fontsize=12)
-ax.set_title(f'Carpet Plot — (L/D)$_{{max}}$ vs Wing Loading\n'
-             f'CD$_0$ = {CD0}, e = {e}, Sea Level', fontsize=14, pad=20)
+fig, ax = plt.subplots(figsize=(11, 8.5))   # Slightly taller for top legend
 
-ax.grid(True, alpha=0.3)
-ax.set_xlim(50, 250)
-ax.set_ylim(14, 22)
+blue_cmap = get_cmap('Blues')
+red_cmap = get_cmap('Reds')
 
-# Legend
-ax.legend(loc='upper right', fontsize=10, ncol=2)
+# === Constant Altitude (rho) lines - Blue ===
+for i, (rho, alt) in enumerate(zip(rho_values, altitudes)):
+    x_list = []
+    y_list = []
+    color = blue_cmap(0.35 + 0.65 * i / (len(rho_values)-1))
+    
+    for CD0 in CD0_values:
+        T_req = (0.5 * rho * V_fps**2 * CD0 * Sref) + \
+                (2 * k * W**2) / (rho * V_fps**2 * Sref)
+        
+        CD_total = CD0 + CD_trim + CD_wave + CDi_const
+        Range_ft = 2 * np.sqrt(2 / (rho * Sref)) * \
+                   (1 / ct) * \
+                   (np.sqrt(CL) / CD_total) * \
+                   (np.sqrt(W_initial) - np.sqrt(W_final))
+        
+        Range_nm = Range_ft / 6076.12
+        
+        x_list.append(Range_nm)
+        y_list.append(T_req)
+    
+    ax.plot(x_list, y_list, '-', linewidth=2.6, color=color,
+            label=f'{alt:,} ft')
 
-# Label the lines (like in the slides)
-for AR in AR_values:
-    # Label at high Mach end
-    M_high = 0.72
-    LD, WS = carpet_data(AR, M_high, CD0, e, gamma, p_sl)
-    ax.text(WS*1.02, LD, f'AR={AR}', fontsize=10, va='center', fontweight='bold')
+# === Constant CD0 lines - Red dashed ===
+for i, CD0 in enumerate(CD0_values):
+    x_list = []
+    y_list = []
+    color = red_cmap(0.35 + 0.65 * i / (len(CD0_values)-1))
+    
+    for rho in rho_values:
+        T_req = (0.5 * rho * V_fps**2 * CD0 * Sref) + \
+                (2 * k * W**2) / (rho * V_fps**2 * Sref)
+        
+        CD_total = CD0 + CD_trim + CD_wave + CDi_const
+        Range_ft = 2 * np.sqrt(2 / (rho * Sref)) * \
+                   (1 / ct) * \
+                   (np.sqrt(CL) / CD_total) * \
+                   (np.sqrt(W_initial) - np.sqrt(W_final))
+        
+        Range_nm = Range_ft / 6076.12
+        
+        x_list.append(Range_nm)
+        y_list.append(T_req)
+    
+    ax.plot(x_list, y_list, '--', linewidth=2.2, color=color,
+            label=f'CD₀ = {CD0:.5f}')
 
-for M in Mach_values:
-    AR_high = 14
-    LD, WS = carpet_data(AR_high, M, CD0, e, gamma, p_sl)
-    ax.text(WS*1.02, LD, f'M={M:.2f}', fontsize=10, va='center')
+# ====================== Formatting ======================
+ax.set_xlabel('Cruise Range [nautical miles]', fontsize=14)
+ax.set_ylabel('Cruise Thrust Required [lbf]', fontsize=14)
+ax.set_title('Carpet Plot\n'
+             'CD0 and Cruise Altitude Effects on Required Cruise Thrust and Cruise Range', 
+             fontsize=15, pad=25)
 
+ax.grid(True, linestyle='--', alpha=0.6)
+
+# Legend 
+ax.legend(title='Constant Altitude (Blue)          Constant C$_{D0}$ (Red Dashed)',
+          title_fontsize=11.5,
+          fontsize=10.8, 
+          loc='upper right', 
+          ncol=2,
+          frameon=True,
+          edgecolor='gray')
 plt.tight_layout()
 plt.show()
-
-# Optional: Save data
-import pandas as pd
-results = []
-for AR in AR_values:
-    for M in Mach_values:
-        LD, WS = carpet_data(AR, M, CD0, e, gamma, p_sl)
-        results.append({'AR': AR, 'Mach': M, 'LD_max': round(LD,2), 'W/S': round(WS,1)})
-
