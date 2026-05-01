@@ -19,8 +19,8 @@ AR = 2.028
 k = 1 / (np.pi * e * AR)
 
 CL_max = 1.96
-n_pos_limit = 7.5
-n_neg_limit = -4.5
+n_pos_limit = 8
+n_neg_limit = -4
 
 # ================== Wave Drag Models ==================
 Amax = 54
