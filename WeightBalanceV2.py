@@ -17,7 +17,7 @@ partNames = np.array([])
 # General aircraft parameters
 W_dg      = 58619.0     # Design gross weight (lbs)
 N_z       = 8.0         # Ultimate load factor
-M         = 0.8         # Cruise Mach number
+M         = 0.85         # Cruise Mach number
 N_c       = 1           # Number of crew
 thrust    = 43000       # Maximum Thrust (lbf)
 S_fw      = 30.915      # Firewall area (ft^2)
@@ -33,14 +33,14 @@ TSFC      = .889        # Thrust specific fuel consumption in lb/lbf/hr (Assumed
 # Wing parameters
 S_w       = 600.0       # Wing reference area (ft²)
 AR_w      = 2.028       # Wing aspect ratio
-t_over_c_root = 0.06    # Root thickness-to-chord ratio 
-Lambda_w   = 38.0       # Wing sweep angle (degrees) 
+t_over_c_root = 0.1    # Root thickness-to-chord ratio 
+Lambda_w   = 47.3       # Wing sweep angle (degrees) 
 taper_ratio = 0.24      # Wing taper ratio (λ)
 K_dw       = 1.0        # Wing weight factor for Delta Wing (Page 610 Raymer)
 K_vs       = 1.0        # Variable sweep factor (1.0 for fixed sweep Page 610 Raymer))
 quarterMAC = 21.54008   # Distance from nose to quarter MAC on main wing in feet
 MAC = 19.35           # Mean Aerodynamic Chord (ft) 
-Span = 34.8          # Wing span (ft)   
+Span = 34.879          # Wing span (ft)   
 
 # Horizontal tail parameters
 S_ht      = 77.27030    # Horizontal tail area (ft²)
@@ -60,10 +60,10 @@ K_rht     = 1.0         # Vertical tail weight correction factor (usually 1.0)
 
 
 # Fuselage parameters
-L_fuse    = 47.78        # Fuselage length (ft) - you had 49.5 earlier
+L_fuse    = 47.79        # Fuselage length (ft)
 D_fuse    = 11.41728    # Fuselage maximum diameter or equivalent width (ft) 
 K_dwf     = 1.0         # Fuselage weight correction factor (usually 1.0)
-W = 13.5                # Fuselage structural width (widest point) in feet
+W = 13.695                # Fuselage structural width (widest point) in feet
 
 # Landing gear parameters
 W_l       = 58619.0     # Landing weight 
@@ -89,7 +89,7 @@ V_i = 0                 # integral tank volume
 V_p = V_t               # volume self sealing tanks (We're assuming none of the tanks are integrated into stucture, for now)
 
 # Control Surfaces
-S_csw     =   ((0.3 * MAC) * (0.175 * Span)) + ((0.4 * MAC) * (0.175 * Span))      # Control surface area includes flaps (wing mounted) 
+S_csw     =   146.766 + 80.026      # Control surface area includes flaps (wing mounted) 
 
 # Other Weights 
 W_Engine = 6422 # lbs
@@ -106,18 +106,18 @@ weights_empty = np.append(weights_empty,[W_Engine,0,0,0,0,0,W_Avionics])
 partNames = np.append(partNames,['Engine','Forward Tank','Main Tank','Drop Tank','AIM9','AIM120','Avionics'])
 
 # Locations of component CGs from nose in feet
-X_Intake = 21.265
+X_Intake = 21.210
 X_Engine = 34.337
 X_Vt = 44.026
-X_Ht = 19.132
-X_Wing = 34.868
+X_Ht = 19.201
+X_Wing = 35.146
 X_ForwardTank = 19.918
 X_MainTank = 35.861
 X_DropTank = 30.992
 X_AIM9 = 41.010
-X_120 = 37.746
+X_120 = 34.858
 X_Avionics = 7.277
-X_Fuselage = 27.104
+X_Fuselage = 27.824
 X_nose_landing_gear = 14.648  # Estimated location of nose landing gear CG from nose (ft)
 X_main_landing_gear = 33.361  # Estimated location of main landing gear
 
