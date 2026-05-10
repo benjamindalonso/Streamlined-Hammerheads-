@@ -93,12 +93,13 @@ S_csw     =   146.766 + 80.026      # Control surface area includes flaps (wing 
 
 # Other Weights 
 W_Engine = 6422 # lbs
-W_ForwardTank = 3007
-W_MainTank = 15035.86   
-W_DropTank = 3007
-W_AIM9 = 380
-W_AIM120 = 696
-W_Avionics = 2500
+W_ForwardTank = 3007 # lbs
+W_MainTank = 15035.86 # lbs
+W_DropTank = 3007 # lbs
+W_AIM9 = 380 # lbs
+W_AIM120 = 696 # lbs
+W_JDAM83 = 1000*4 # lbs
+W_Avionics = 2500 # lbs
 W_APU = 75 # lbs (based on honeywell micropower unit)
 
 weights = np.append(weights,[W_Engine,W_ForwardTank,W_MainTank,W_DropTank,3*W_AIM9,W_AIM120,W_Avionics])
