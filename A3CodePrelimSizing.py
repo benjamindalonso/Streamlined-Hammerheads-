@@ -11,24 +11,25 @@ def Stall_Constraint(Clmax, rho, Vstall):
     return Stall_Constraint
 
 # Cruise Constraint
-def Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, k, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction):
+def Cruise_Constraint(rhoCruise, Vcruise, Cd0Cruise, K, Wing_Loading, TakeoffFuelFraction, ClimbFuelFraction,ThrustReduction):
     qcr = (0.5 * rhoCruise * (Vcruise ** 2))
     Wing_LoadingCruise = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction
-    ThrustToWeightCruise = ((qcr * Cd0Cruise) / (Wing_LoadingCruise)) + ((k / qcr) * Wing_LoadingCruise)
+    ThrustToWeightCruise = ((qcr * Cd0Cruise) / (Wing_LoadingCruise)) + ((K / qcr) * Wing_LoadingCruise)
     Cruise_Constraint = ThrustToWeightCruise * ((TakeoffFuelFraction * ClimbFuelFraction)/(ThrustReduction))
     return Cruise_Constraint
 
 # Maneuvering Constraint (sustained and instant)
-def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, k, Wing_Loading, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction):
+def Sustained_Turn_Constraint(TurnRate, g, Vturn, Cd0, K, Wing_Loading, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction, ThrustReduction):
     n = math.sqrt(((TurnRate * Vturn) / g)**2 + 1)
     q = 0.5 * rho * (Vturn**2)
-    Wing_LoadingTurn = Wing_Loading * TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction 
+    ff = TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction
+    Wing_LoadingTurn = Wing_Loading * ff
     
-    # Required T/W at maneuver alt
-    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (K * (n**2) * Wing_LoadingTurn / q )
+    # T/W at maneuver condition (T_man/W_man)
+    TW_turn = (q * Cd0 / Wing_LoadingTurn) + (K * (n**2) * Wing_LoadingTurn / q)
     
-    # Correct back to Sea Level Static T/W (T0/W0)
-    TW_SLS = TW_turn * (TakeoffFuelFraction * ClimbFuelFraction * MidMissionFuelFraction / ThrustReduction)
+    # Convert to sea-level static T0/W0
+    TW_SLS = TW_turn * (ff / ThrustReduction)
     return TW_SLS
 
 def Instantaneous_Turn_Constraint(Clmax, TurnRate, Vturn, g, rho, MidMissionFuelFraction, TakeoffFuelFraction, ClimbFuelFraction):
@@ -72,43 +73,43 @@ def Climb_Constraint(Ks, K, Climb_Cd0, Clmax, Climb_Gradient):
 Clmax = 1.5
 rho = 0.0023769
 rhoTropicalDay = 0.00219
-Vstall = 135
+Vstall = 135* 1.68781
 rhoCruise = 0.0007382
-Vcruise = 550
-Cd0Cruise = 0.00696
+Vcruise = 550* 1.68781
+Cd0Cruise = 0.00882
 Ks = 1.8
-TakeoffFuelFraction = 0.99
+TakeoffFuelFraction = 0.9891
 ClimbFuelFraction = 0.96
-ThrustReduction = 0.8
-TurnRate = 0.1745
+ThrustReduction = 0.65
+TurnRate = 0.139626
 g = 32.174
-Vturn = 500
-Cd0Turn = 0.00696
+Vturn = 843
+Cd0Turn = 0.0086
 rhoTurn = 0.001267
 MidMissionFuelFraction = 0.906
 ROC = 200
 V_horizontal = 500 * 1.68781
 V_horizontal_min = V_horizontal * 60
 Climb_Gradient = ROC / V_horizontal_min
-Climb_Cd0 = 0.01696
-e = 0.8
-AR = 2.5
+Climb_Cd0 = 0.0086
+e = 0.5398
+AR = 2.227
 K = 1/(math.pi*e*AR)
 rhoDash = 0.000889
 aDash   = 994.0
-MachDash = 2
-CD0Dash  = Cd0Cruise
-Vend = 135
+MachDash = 1.63
+CD0Dash  = .00783
+Vend = 135* 1.68781
 Vwod = 0
-Vthrust = 10
-ClmaxTakeOff = 1.
-GTOW = 67822
-LandingWeight = 51010
-maxLandSpeed = 202.6
-ClmaxLand = 1.5
+Vthrust = 10* 1.68781
+ClmaxTakeOff = 2.6
+GTOW = 54748.1
+LandingWeight = 36747.7185
+maxLandSpeed = 202.6* 1.68781
+ClmaxLand = 2.6
 
 # Design Point Parameters
-design_weight = 54748.1  # lbf
+design_weight = GTOW  # lbf
 wing_area = 600          # ft^2
 total_thrust = 43000     # lbf
 
