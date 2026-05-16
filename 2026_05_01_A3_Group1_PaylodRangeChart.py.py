@@ -19,7 +19,7 @@ MFW = fuel_capacity_ft3 * fuel_density
 
 # Mission/Payload 
 # Calculate design payload weight
-DPW = 1836   # Design Payload Weight
+DPW = 5140   # Design Payload Weight
 
 # Reserve fuel fraction — kept on board at landing (not burned for range)
 RFF = 0.15   # 15 %
@@ -185,7 +185,7 @@ env_p = [payload_A, payload_B, payload_C, payload_D]
 ax.plot(env_r, env_p, color='#1f77b4', lw=3, marker='o', mfc='white', mew=2, label='Structural Envelope')
 
 # Plot Design Point T
-ax.scatter(range_T, payload_T, color='red', s=120, edgecolors='black', zorder=5, label=f'Design Point (T), 1836 lb @ 1927 nm')
+#ax.scatter(range_T, payload_T, color='red', s=120, edgecolors='black', zorder=5, label=f'Design Point (T), 1836 lb @ 1927 nm')
 
 # Clean Annotations (Offsets adjusted for no-overlap)
 ann_data = [
