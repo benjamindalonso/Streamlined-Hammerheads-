@@ -3,8 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Aircraft Weight Data
-MTOW = 54748.1   # lb  Maximum takeoff weight
-OEW  = 31862.2   # lb  Operating empty weight
+MTOW = 58498.11   # lb  Maximum takeoff weight
+OEW  = 32308.25   # lb  Operating empty weight
 # Assumed from MZFW fraction of FA-18E/F (0.7438) multiplied by MTOW (54748.1 lb)
 MZFW =  40732.6  # lb  Maximum zero-fuel weight (structural limit! of the aircraft)
 # Maximum payload weight
