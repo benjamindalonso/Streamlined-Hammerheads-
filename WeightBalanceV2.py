@@ -32,7 +32,7 @@ TSFC      = .889        # Thrust specific fuel consumption in lb/lbf/hr (Assumed
 
 # Wing parameters
 S_w       = 600.0       # Wing reference area (ft²)
-AR_w      = 2.028       # Wing aspect ratio
+AR_w      = 2.227       # Wing aspect ratio
 t_over_c_root = 0.1    # Root thickness-to-chord ratio 
 Lambda_w   = 47.3       # Wing sweep angle (degrees) 
 taper_ratio = 0.24      # Wing taper ratio (λ)
