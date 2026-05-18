@@ -171,6 +171,7 @@ def get_mil_gust_velocity(V, V_C, V_D, alt_label):
 # V-n plot
 def plot_vn(Weight):
     print(f"\n=== Weight: {Weight:.0f} lb ===")
+   
 
     V_C = find_vmax(Weight)
     V_D = 1.13 * V_C
@@ -283,7 +284,7 @@ def plot_vn(Weight):
     ax.grid(True, alpha=0.35)
     ax.legend(loc='upper left', fontsize=9, framealpha=0.9)
     ax.set_xlim(0, V_D * 1.07)
-    ax.set_ylim(n_neg_limit - 1.5, n_pos_limit + 1.2)
+    ax.set_ylim(n_neg_limit - 4, n_pos_limit + 2)
     fig.tight_layout()
     plt.show()
 
