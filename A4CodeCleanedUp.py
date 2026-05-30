@@ -31,7 +31,7 @@ e = 0.5398 # Oswald efficiency factor (Typical value for fighter))
 AR = 2.227 # Aspect Ratio from OpenVSP
 K =  1/(math.pi*e*AR) # Induced drag factor
 Climb_Cd0 = Clean_Cd0 + 0.015 # Adjust coefficient of drag for takeoff flaps
-Takeoff_Clmax = 1.77 # Slide 11 Preliminary sizing lecture part 2
+Takeoff_Clmax = 1.96 # Slide 11 Preliminary sizing lecture part 2
 ROC = 200 # Rate of _ ft/min
 V_horizontal = 500 * 1.68781  # Climb airspeed knots to ft/s
 V_horizontal_min = V_horizontal * 60  # Climb airspeed in ft/min
@@ -40,7 +40,7 @@ rhoTropicalDay = 0.00219 # Air density at sea level on a tropical day in slugs/f
 
 # Landing Constraint
 maxLandSpeed = 230 # Max landing speed in feet per second 
-Landing_Clmax = 2.6
+Landing_Clmax = 1.96
 
 # Launch Constraint
 Vend = 135 # Catapult end speed in knots with a 67,000 GTOW and a 210 CSV setting on the catapult 
@@ -49,12 +49,12 @@ Vthrust = 10 # Velocity added by engine thrust during catapult launch (Assumed t
 Vendfps = 1.6878 * Vend # This converts knots to feet per second
 Vwodfps = 1.6878 * Vwod # This converts knots to feet per second
 Vthrustfps = 1.6878 * Vthrust # This converts knots to feet per second
-Takeoff_Clmax = 2.6 # Clmax at takeoff per slide 11 of preliminary sizing part 2
+Takeoff_Clmax = 1.96 # Clmax at takeoff per slide 11 of preliminary sizing part 2
 
 # Stall Constraint
 Vstall = 120 # Target stall speed in knots
 Vstallfps = 1.6878 * Vstall # Stall speed in feet per second
-Stall_Clmax = 2.6 # Based on AVL data (Takeoff/Landing configuration)
+Stall_Clmax = 1.96 # Based on AVL data (Takeoff/Landing configuration)
 
 # Maneuver Constraint
 TurnRate = 0.139626 # in Rad/s based on rfp minimum of 8 deg/s
@@ -515,27 +515,27 @@ plt.ylim(0, 90000)
 # Climb constraint
 plt.plot(WingAreaGrid, T_Converged_Climb,
          linestyle='-', linewidth=2.0, color='C0',
-         label='Climb (ROC + lapse adjustment)')
+         label='Climb')
 
 # Landing constraint
 plt.plot(S_Converged_Landing, ThrustGrid,
          linestyle='--', linewidth=2.0, color='C3',
-         label=f'Landing (max speed = {maxLandSpeed:.1f} ft/s)')
+         label=f'Landing')
 
 # Launch / Takeoff constraint
 plt.plot(S_min_launch, T_for_plot,
          linestyle=':', linewidth=2.0, color='C4',
-         label='Launch / Takeoff (min S for WS limit)')
+         label='Launch')
 
 # Stall Constraint
 plt.plot(S_min_stall, T_for_plotstall,
          linestyle=':', linewidth=2.0, color='C8',
-         label='Stall (min S for WS limit)')
+         label='Stall')
 
 # Sustained Turn (8 deg/s)
 plt.plot(WingAreaGrid, T_Converged_Maneuver,
          linestyle='-.', linewidth=2.0, color='C1',
-         label='Sustained Turn (8 deg/s min @ 20k ft)')
+         label='Turn')
 
 # Sustained Turn (10 deg/s)
 #plt.plot(WingAreaGrid, T_Converged_Maneuver10,
@@ -545,61 +545,75 @@ plt.plot(WingAreaGrid, T_Converged_Maneuver,
 # Cruise constraint
 plt.plot(WingAreaGrid, T_Converged_Cruise,
          linestyle='-', linewidth=2.0, color='C5',
-         label='Cruise (30k ft)')
+         label='Cruise')
 
 # Dash constraint
 plt.plot(WingAreaGrid, T_Converged_Dash,
          linestyle='-', linewidth=2.0, color='C6',
-         label='Dash (Mach 2 @ 30k ft)')
+         label='Dash')
 
 
 
 
 # Example aircraft (keep stars only)
 plt.scatter(S_F22, T_F22, color='k', marker='o', s=50,
-            label=f'F-22 Raptor (S={S_F22:.0f} ft², T={T_F22:.0f} lbf)')
+            label=f'F-22')
 plt.scatter(S_F35, T_F35, color='m', marker='o', s=50,
-            label=f'F-35 Lightning II (S={S_F35:.1f} ft², T={T_F35:.0f} lbf)')
+            label=f'F-35')
 plt.scatter(S_DRM, T_DRM, color='g', marker='o', s=50,
-            label=f'Rafale M (S={S_DRM:.1f} ft², T={T_DRM:.0f} lbf)')
+            label=f'Rafale')
 plt.scatter(S_F18, T_F18, color='b', marker='o', s=50,
-            label=f'F-18 Super Hornet (S={S_F18:.0f} ft², T={T_F18:.0f} lbf)')
+            label=f'F-18 E/F')
 
 # Our chosen design point 
 plt.scatter(S_Design, T_Design, color='r', marker='*', s=300,
-            label=f'Our Design Point (S={S_Design:.0f} ft², T={T_Design:.0f} lbf)')
+            label=f'Our Design')
 
 
-# Shade ONLY above the maneuver line AND only below 60,000 lbf
+# Shade feasible region above the maneuver line
 plt.fill_between(
     WingAreaGrid, 
-    T_Converged_Maneuver,          # lower boundary = maneuver line
-    60000,                         # upper boundary = 60k lbf
-    where=np.array(T_Converged_Maneuver) < 60000,   # ← this is the key
+    T_Converged_Maneuver,          
+    42999,                         
+    where=np.array(T_Converged_Maneuver) < 42999,
     color='lightgreen', 
     alpha=0.35,
-    label='Feasible Region'
+    label='Feasible Region',
+    edgecolor='none',      # ← Add this
+    linewidth=0            # ← Add this
 )
 
-x_points = [525, 640, 1600, 1600]      # ← change these x values (Wing Area)
-y_points = [60000, 90000, 90000, 60000]  # ← change these y values (Thrust)
-
-# Close the polygon automatically
-x_points.append(x_points[0])
-y_points.append(y_points[0])
+# Second shaded region (top-right area)
+x_points = [600, 850, 1490, 1490]      
+y_points = [42999, 90000, 90000, 42999]
 
 plt.fill(x_points, y_points, 
          color='lightgreen', 
-         alpha=0.35)
+         alpha=0.35,
+         edgecolor='none',     # ← Add this
+         linewidth=0)          # ← Add this
          
 
 
-# Formatting
-plt.xlabel("Wing Area S  (ft²)", fontsize=13)
-plt.ylabel("Total Thrust Required  (lbf)", fontsize=13)
-plt.title("Aircraft Sizing Constraint Diagram", fontsize=15, fontweight='bold')
+# Formatting - IMPROVED
+plt.xlabel("Wing Area S  (ft²)", fontsize=19)
+plt.ylabel("Total Thrust Required  (lbf)", fontsize=19)
+plt.title("Aircraft Sizing Constraint Diagram", fontsize=22, fontweight='bold')
+
+# Make tick labels (numbers) bigger
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+
+# Or use this (more flexible):
+# plt.tick_params(axis='both', which='major', labelsize=14)
+
+# Make legend bigger
+plt.legend(fontsize=15, 
+           loc='upper right', 
+           framealpha=0.95, 
+           edgecolor='gray',
+           ncol=1)
+
 plt.grid(True, linestyle='--', alpha=0.6)
-plt.legend(fontsize=9, loc='upper right', framealpha=0.95, edgecolor='gray',
-           ncol=1, columnspacing=1.0, labelspacing=0.5)
 plt.tight_layout()
 plt.show()
