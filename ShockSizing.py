@@ -35,7 +35,7 @@ print(f"Main Shock stroke length S = {Smain:.2f} ft")
 print(f"Nose Shock stroke length S = {Snose:.2f} ft")
 
 # Calculate length of oleo 
-Lmain = Smain * 2.5 # Total oleo length is 2.5 times the stroke 
+Lmain = Smain * 2.5 # Total oleo length is 2.5 times the stroke (Thisis the total length when there is no weight on wheels)
 Lnose = Snose * 2.5
 print(f"Main Oleo length L = {Lmain:.2f} ft")
 print(f"Nose Oleo length L = {Lnose:.2f} ft")
